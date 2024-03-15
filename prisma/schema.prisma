@@ -37,10 +37,11 @@ model Admin {
 // Manager can approve the token request
 model Manager {
   uid            String
-  user           User           @relation(fields: [uid], references: [id])
-  organization   Organization   @relation(fields: [organizationId], references: [id])
+  user           User         @relation(fields: [uid], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
-  TokenManager   TokenManager[]
+
+  token Token[]
 
   @@id([uid, organizationId])
 }
@@ -51,6 +52,8 @@ model Checker {
   user           User         @relation(fields: [uid], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
+
+  token Token[]
 
   @@id([uid, organizationId])
 }
@@ -86,10 +89,15 @@ enum TokenStatus {
   REJECTED
   EXPIRED
   IN_USE
+  RETURNED_BEFORE_ISSUED
+  RETURNED_AFTER_ISSUED
+  LATE
 }
 
 model Token {
-  token     String   @id @default(uuid())
+  token  String @id @default(uuid())
+  reason String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -101,17 +109,24 @@ model Token {
   startTime DateTime
   endTime   DateTime
 
-  tokenManager TokenManager[]
+  acceptedTime  DateTime
+  acceptedBy    Manager  @relation(fields: [acceptedByUid, organizationId], references: [uid, organizationId])
+  acceptedByUid String
+
+  exitTime     DateTime
+  returnedTime DateTime
+
+  checkedBy    Checker @relation(fields: [checkedByUid, organizationId], references: [uid, organizationId])
+  checkedByUid String
+
+  lateEntry lateEntry[]
 }
 
-// to Store which token is given to which manager to approve
-model TokenManager {
-  token   Token  @relation(fields: [tokenId], references: [token])
-  tokenId String
+model lateEntry {
+  referedToken      Token    @relation(fields: [token], references: [token])
+  token             String   @id
+  exceptedEntryTime DateTime
 
-  manager               Manager @relation(fields: [managerUid, managerOrganizationId], references: [uid, organizationId])
-  managerUid            String
-  managerOrganizationId String
-
-  @@id([tokenId])
+  reason    String
+  createdAt DateTime @default(now())
 }
