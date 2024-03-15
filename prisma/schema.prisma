@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User schema
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  admin     Admin[]
+  checker   Checker[]
+  peoples   Peoples[]
+  manager   Manager[]
+}
+
+// Admin creates organizations, add users and assigns roles to users like people, manager, checker
+model Admin {
+  uid            String
+  user           User         @relation(fields: [uid], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  @@id([uid, organizationId])
+}
+
+// Manager can approve the token request
+model Manager {
+  uid            String
+  user           User           @relation(fields: [uid], references: [id])
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  organizationId String
+  TokenManager   TokenManager[]
+
+  @@id([uid, organizationId])
+}
+
+// Checker can check the token status and check entry and exit
+model Checker {
+  uid            String
+  user           User         @relation(fields: [uid], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  @@id([uid, organizationId])
+}
+
+// Organization schema
+model Organization {
+  id        String    @id @default(uuid())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  peoples   Peoples[]
+  admin     Admin[]
+  checker   Checker[]
+  Manager   Manager[]
+}
+
+// Students schema
+model Peoples {
+  user           User         @relation(fields: [uid], references: [id])
+  uid            String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  token Token[]
+
+  @@id([uid, organizationId])
+}
+
+// Token Status
+enum TokenStatus {
+  REQUESTED
+  ISSUED
+  REJECTED
+  EXPIRED
+  IN_USE
+}
+
+model Token {
+  token     String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issuedBy       Peoples     @relation(fields: [issuedById, organizationId], references: [uid, organizationId])
+  issuedById     String
+  organizationId String
+  status         TokenStatus
+
+  startTime DateTime
+  endTime   DateTime
+
+  tokenManager TokenManager[]
+}
+
+// to Store which token is given to which manager to approve
+model TokenManager {
+  token   Token  @relation(fields: [tokenId], references: [token])
+  tokenId String
+
+  manager               Manager @relation(fields: [managerUid, managerOrganizationId], references: [uid, organizationId])
+  managerUid            String
+  managerOrganizationId String
+
+  @@id([tokenId])
+}
