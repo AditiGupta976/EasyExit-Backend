@@ -6,59 +6,63 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
-// User schema
+/// User schema
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
-  name      String
-  password  String
+  name      String?
+  password  String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  admin     Admin[]
-  checker   Checker[]
-  peoples   Peoples[]
-  manager   Manager[]
+  admin     Admin?
+  checker   Checker?
+  peoples   Peoples?
+  manager   Manager?
 }
 
-// Admin creates organizations, add users and assigns roles to users like people, manager, checker
+/// Admin creates organizations, add users and assigns roles to users like people, manager, checker
 model Admin {
-  uid            String
+  uid            String       @id
   user           User         @relation(fields: [uid], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
-  @@id([uid, organizationId])
+  @@index([uid])
+  @@index([organizationId])
 }
 
-// Manager can approve the token request
+/// Manager can approve the token request
 model Manager {
-  uid            String
+  uid            String       @id
   user           User         @relation(fields: [uid], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
   token Token[]
 
-  @@id([uid, organizationId])
+  @@index([uid])
+  @@index([organizationId])
 }
 
-// Checker can check the token status and check entry and exit
+/// Checker can check the token status and check entry and exit
 model Checker {
-  uid            String
+  uid            String       @id
   user           User         @relation(fields: [uid], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
   token Token[]
 
-  @@id([uid, organizationId])
+  @@index([uid])
+  @@index([organizationId])
 }
 
-// Organization schema
+/// Organization schema
 model Organization {
   id        String    @id @default(uuid())
   name      String
@@ -68,25 +72,31 @@ model Organization {
   admin     Admin[]
   checker   Checker[]
   Manager   Manager[]
+  unrestrictedStartTime DateTime @db.Time()
+  unrestrictedEndTime DateTime @db.Time()
+
+  @@index([id, name])
 }
 
-// Students schema
+/// Students schema
 model Peoples {
   user           User         @relation(fields: [uid], references: [id])
-  uid            String
+  uid            String       @id
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
   token Token[]
 
-  @@id([uid, organizationId])
+  @@index([organizationId])
+  @@index([uid])
 }
 
-// Token Status
+/// Token Status
 enum TokenStatus {
   REQUESTED
   ISSUED
   REJECTED
+  // When user is not late and returned
   EXPIRED
   IN_USE
   RETURNED_BEFORE_ISSUED
@@ -94,6 +104,7 @@ enum TokenStatus {
   LATE
 }
 
+/// Token schema
 model Token {
   token  String @id @default(uuid())
   reason String
@@ -101,32 +112,40 @@ model Token {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  issuedBy       Peoples     @relation(fields: [issuedById, organizationId], references: [uid, organizationId])
+  issuedBy       Peoples     @relation(fields: [issuedById], references: [uid])
   issuedById     String
   organizationId String
-  status         TokenStatus
+  status         TokenStatus @default(REQUESTED)
 
   startTime DateTime
   endTime   DateTime
 
   acceptedTime  DateTime
-  acceptedBy    Manager  @relation(fields: [acceptedByUid, organizationId], references: [uid, organizationId])
+  acceptedBy    Manager? @relation(fields: [acceptedByUid], references: [uid])
   acceptedByUid String
 
   exitTime     DateTime
   returnedTime DateTime
 
-  checkedBy    Checker @relation(fields: [checkedByUid, organizationId], references: [uid, organizationId])
+  checkedBy    Checker? @relation(fields: [checkedByUid], references: [uid])
   checkedByUid String
 
-  lateEntry lateEntry[]
+  lateEntry lateEntry?
+
+  @@index([token])
+  @@index([issuedById, organizationId])
+  @@index([acceptedByUid, organizationId])
+  @@index([checkedByUid, organizationId])
 }
 
+/// Late Entry
 model lateEntry {
   referedToken      Token    @relation(fields: [token], references: [token])
   token             String   @id
-  exceptedEntryTime DateTime
+  expectedEntryTime DateTime
 
   reason    String
   createdAt DateTime @default(now())
+
+  @@index([token])
 }
