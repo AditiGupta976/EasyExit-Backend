@@ -9,7 +9,7 @@ import {
     response_404,
     response_500
 } from '../utils/responseCodes.js';
-import role from '../utils/role.js';
+import userRole from '../utils/role.js';
 
 export async function login(req, res) {
     try {
@@ -91,7 +91,7 @@ export async function adminRegister(req, res) {
 
         const payLoad = {
             email: email,
-            role: role.admin
+            role: userRole.admin
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been Registered', {
@@ -135,7 +135,70 @@ export async function peoplesRegister(req, res) {
 
         const payLoad = {
             email: email,
-            role: role.peoples
+            role: userRole.peoples
+        };
+        const token = jwt.sign(payLoad, process.env.JWT_SECRET);
+        return response_200(res, 'User has been Registered', {
+            token,
+            name: name,
+            email: email
+        });
+    } catch (error) {
+        console.log(error);
+        return response_500(res, 'Error in Registering', error);
+    }
+}
+
+export async function validate(req, res) {
+    try {
+        const { email, organizationId, role } = req.body;
+
+        if (role != 'manager' && role != 'checker') {
+            return response_400(res, 'Not a valid role for validation');
+        }
+
+        const existingSupervisor = await prisma[role].findUnique({
+            where: {
+                organizationId: organizationId,
+                email: email
+            }
+        });
+        if (existingSupervisor) {
+            return response_200(res, 'validated for organization', {
+                email: email,
+                role: role
+            });
+        } else {
+            return response_400(res, 'Not registered for organization');
+        }
+    } catch (error) {
+        console.log(error);
+        return response_500(res, 'Error in Validating', error);
+    }
+}
+
+export async function supervisorRegister(req, res) {
+    try {
+        const { email, name, password, role } = req.body;
+
+        if (!(role in userRole)) {
+            return response_400(res, 'Not a valid Role');
+        }
+        const hashedPassword = await hash(password, 10);
+
+        await prisma.user.update({
+            where: {
+                email: email
+            },
+            data: {
+                name: name,
+                password: hashedPassword
+            }
+        });
+
+        const payLoad = {
+            email: email,
+            role: role
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been Registered', {
