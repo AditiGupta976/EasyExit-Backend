@@ -123,11 +123,11 @@ model Token {
   acceptedBy    Manager? @relation(fields: [acceptedByUid], references: [email])
   acceptedByUid String
 
-  exitTime     DateTime
-  returnedTime DateTime
+  exitTime     DateTime?
+  returnedTime DateTime?
 
   checkedBy    Checker? @relation(fields: [checkedByUid], references: [email])
-  checkedByUid String
+  checkedByUid String?
 
   lateEntry lateEntry?
 

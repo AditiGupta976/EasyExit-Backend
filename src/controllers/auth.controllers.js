@@ -181,7 +181,7 @@ export async function supervisorRegister(req, res) {
     try {
         const { email, name, password, role } = req.body;
 
-        if (!(role in userRole)) {
+        if (!(role in userRole)) {             // (Swaroop ) why userRole as it also contains people
             return response_400(res, 'Not a valid Role');
         }
         const hashedPassword = await hash(password, 10);
