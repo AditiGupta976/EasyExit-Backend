@@ -13,12 +13,12 @@ datasource db {
 
 /// User schema
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
+  id        String   @id @default(uuid())
+  email     String   @unique
   name      String?
   password  String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   admin     Admin?
   checker   Checker?
   peoples   Peoples?
@@ -64,16 +64,16 @@ model Checker {
 
 /// Organization schema
 model Organization {
-  id        String    @id @default(uuid())
-  name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  peoples   Peoples[]
-  admin     Admin[]
-  checker   Checker[]
-  Manager   Manager[]
-  unrestrictedStartTime DateTime @db.Time()
-  unrestrictedEndTime DateTime @db.Time()
+  id                    String    @id @default(uuid())
+  name                  String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  peoples               Peoples[]
+  admin                 Admin[]
+  checker               Checker[]
+  Manager               Manager[]
+  unrestrictedStartTime DateTime  @db.Time()
+  unrestrictedEndTime   DateTime  @db.Time()
 
   @@index([id, name])
 }
