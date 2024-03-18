@@ -26,7 +26,7 @@ export function response_400(res, message) {
     return res.status(400).json({
         status: 'error',
         error: message,
-        message: "Bad request"
+        message: 'Bad request'
     });
 }
 
@@ -34,7 +34,7 @@ export function response_401(res, message) {
     return res.status(401).json({
         status: 'error',
         error: message,
-        message: "Unauthorized"
+        message: 'Unauthorized'
     });
 }
 
@@ -42,7 +42,7 @@ export function response_403(res, message) {
     return res.status(403).json({
         status: 'error',
         error: message,
-        message: "Forbidden"
+        message: 'Forbidden'
     });
 }
 
@@ -50,7 +50,7 @@ export function response_404(res, message) {
     return res.status(404).json({
         status: 'error',
         error: message,
-        message: "Not found"
+        message: 'Not found'
     });
 }
 
@@ -62,6 +62,6 @@ export function response_500(res, log_message, err) {
     return res.status(500).json({
         status: 'error',
         error: `Something went wrong.\n${message}`,
-        message: "Internal server error"
+        message: 'Internal server error'
     });
 }

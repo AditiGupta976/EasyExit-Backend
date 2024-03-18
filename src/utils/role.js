@@ -1,6 +1,6 @@
 export default {
-    peoples:'peoples',
-    admin:'admin',
-    manager:'manager',
-    checker:'checker'
-}
+    peoples: 'peoples',
+    admin: 'admin',
+    manager: 'manager',
+    checker: 'checker'
+};
