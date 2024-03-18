@@ -13,8 +13,7 @@ datasource db {
 
 /// User schema
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  email     String   @id
   name      String?
   password  String?
   createdAt DateTime @default(now())
@@ -27,38 +26,38 @@ model User {
 
 /// Admin creates organizations, add users and assigns roles to users like people, manager, checker
 model Admin {
-  uid            String       @id
-  user           User         @relation(fields: [uid], references: [id])
+  email            String       @id
+  user           User         @relation(fields: [email], references: [email])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
-  @@index([uid])
+  @@index([email])
   @@index([organizationId])
 }
 
 /// Manager can approve the token request
 model Manager {
-  uid            String       @id
-  user           User         @relation(fields: [uid], references: [id])
+  email            String       @id
+  user           User         @relation(fields: [email], references: [email])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
   token Token[]
 
-  @@index([uid])
+  @@index([email])
   @@index([organizationId])
 }
 
 /// Checker can check the token status and check entry and exit
 model Checker {
-  uid            String       @id
-  user           User         @relation(fields: [uid], references: [id])
+  email            String       @id
+  user           User         @relation(fields: [email], references: [email])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
   token Token[]
 
-  @@index([uid])
+  @@index([email])
   @@index([organizationId])
 }
 
@@ -72,23 +71,23 @@ model Organization {
   admin                 Admin[]
   checker               Checker[]
   Manager               Manager[]
-  unrestrictedStartTime DateTime  @db.Time()
-  unrestrictedEndTime   DateTime  @db.Time()
+  unrestrictedStartTime DateTime  @db.Time() @default(dbgenerated("100000"))
+  unrestrictedEndTime   DateTime  @db.Time() @default(dbgenerated("180000"))
 
   @@index([id, name])
 }
 
 /// Students schema
 model Peoples {
-  user           User         @relation(fields: [uid], references: [id])
-  uid            String       @id
+  user           User         @relation(fields: [email], references: [email])
+  email            String       @id
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
   token Token[]
 
   @@index([organizationId])
-  @@index([uid])
+  @@index([email])
 }
 
 /// Token Status
@@ -112,7 +111,7 @@ model Token {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  issuedBy       Peoples     @relation(fields: [issuedById], references: [uid])
+  issuedBy       Peoples     @relation(fields: [issuedById], references: [email])
   issuedById     String
   organizationId String
   status         TokenStatus @default(REQUESTED)
@@ -121,13 +120,13 @@ model Token {
   endTime   DateTime
 
   acceptedTime  DateTime
-  acceptedBy    Manager? @relation(fields: [acceptedByUid], references: [uid])
+  acceptedBy    Manager? @relation(fields: [acceptedByUid], references: [email])
   acceptedByUid String
 
   exitTime     DateTime
   returnedTime DateTime
 
-  checkedBy    Checker? @relation(fields: [checkedByUid], references: [uid])
+  checkedBy    Checker? @relation(fields: [checkedByUid], references: [email])
   checkedByUid String
 
   lateEntry lateEntry?

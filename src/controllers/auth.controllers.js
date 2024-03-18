@@ -1,13 +1,15 @@
-import prisma from '../config/db.config';
-import { sign } from 'jsonwebtoken';
-import { compare } from 'bcrypt';
+import prisma from '../config/db.config.js';
+import jwt from 'jsonwebtoken';
+import { compare,hash } from 'bcrypt';
+
 import {
     response_200,
     response_400,
     response_401,
     response_404,
     response_500
-} from '../utils/responseCodes';
+} from '../utils/responseCodes.js';
+import role from '../utils/role.js'
 
 export async function login(req, res) {
     try {
@@ -18,9 +20,7 @@ export async function login(req, res) {
         }
         const existingUser = await prisma[req.body.role].findUnique({
             where: {
-                user: {
-                    email: req.body.email
-                }
+                email: req.body.email
             },
             select: {
                 user: {
@@ -37,7 +37,7 @@ export async function login(req, res) {
         }
         const matchPassword = await compare(
             req.body.password,
-            existingUser.password
+            existingUser.user.password
         );
         if (!matchPassword) {
             response_401(res, 'Invalid email or password');
@@ -46,7 +46,7 @@ export async function login(req, res) {
             email: existingUser.email,
             role: req.body.role
         };
-        const token = sign(payLoad, process.env.JWT_SECRET);
+        const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         response_200(res, 'User has been logged In', {
             token,
             name: existingUser.name
@@ -54,5 +54,54 @@ export async function login(req, res) {
     } catch (error) {
         console.error(error);
         response_500(res, 'Server Error', error);
+    }
+}
+
+export async function adminRegister(req, res) {
+    try {
+        const { email, name, password, organizationName } = req.body;
+
+        const existingUser = await prisma.user.findUnique({
+            where: {
+                email: email
+            }
+        });
+        if (existingUser) {
+            console.log(existingUser);
+            return response_400(res, 'User already Registered');
+        }
+        const hashedPassword = await hash(password, 10);
+        
+        await prisma.organization.create({
+            data: {
+                name: organizationName,
+                admin: {
+                    create: {
+                        user: {
+                            create: {
+                                email: email,
+                                name: name,
+                                password: hashedPassword
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const payLoad = {
+            email: email,
+            role: role.admin,
+        };
+        const token = jwt.sign(payLoad, process.env.JWT_SECRET);
+        response_200(res, 'User has been Registered', {
+            token,
+            name: name,
+            email:email
+        });
+
+    } catch (error) {
+        console.log(error);
+        return response_500(res, 'Error in Registering', error);
     }
 }
