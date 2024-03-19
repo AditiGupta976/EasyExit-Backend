@@ -13,14 +13,18 @@ import userRole from '../utils/role.js';
 
 export async function login(req, res) {
     try {
+        const { email, password, role } = req.body;
+        if (!email || !password || !role) {
+            return response_400(res,'Fields missing, check documentation');
+        }
         if (
-            !['peoples', 'admin', 'checker', 'manager'].includes(req.body.role)
+            !['peoples', 'admin', 'checker', 'manager'].includes(role)
         ) {
             return response_400(res, 'Unavailable Role');
         }
-        const existingUser = await prisma[req.body.role].findUnique({
+        const existingUser = await prisma[role].findUnique({
             where: {
-                email: req.body.email
+                email: email
             },
             select: {
                 user: {
@@ -36,7 +40,7 @@ export async function login(req, res) {
             return response_404(res, 'User not found');
         }
         const matchPassword = await compare(
-            req.body.password,
+            password,
             existingUser.user.password
         );
         if (!matchPassword) {
@@ -44,8 +48,8 @@ export async function login(req, res) {
         }
         const payLoad = {
             email: existingUser.email,
-            role: req.body.role,
-            organizationId: existingUser.organizationId     // (swaroop) check it
+            role: role,
+            organizationId: existingUser.organizationId
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been logged In', {

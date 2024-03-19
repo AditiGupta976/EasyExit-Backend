@@ -1,7 +1,7 @@
 import { response_400 } from '../utils/responseCodes.js';
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
-const middlewareEmailValidater = (email) => {
+export const middlewareEmailValidater = (email) => {
     return (req, res, next) => {
         email = req.body.email;
         if (!email) {
@@ -14,13 +14,9 @@ const middlewareEmailValidater = (email) => {
     };
 };
 
-const emailValidater = (email) => {
-    if (!email) {
-        return false;
-    }
-    if (!emailRegex.test(email)) {
+export const emailValidater = (email) => {
+    if (!email || !emailRegex.test(email)) {
         return false;
     }
     return true;
 };
-export { middlewareEmailValidater, emailValidater };

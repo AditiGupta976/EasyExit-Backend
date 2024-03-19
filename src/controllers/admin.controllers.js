@@ -40,69 +40,26 @@ export async function addSupervisor(req, res) {
             return response_404(res, 'Invalid Checker or Manager emails!');
 
         // const validEmails = [...validCheckerEmails, ...validManagerEmails];
-        // const supervisor = await prisma.$transaction([
-        //     prisma.user.createMany({
-        //         data: validEmails.map((email) => ({ email })),
-        //         skipDuplicates: true
-        //     }),
-        //     prisma.checker.createMany({
-        //         data: validCheckerEmails.map((email) => ({
-        //             email: email,
-        //             organizationId: organizationId
-        //         }))
-        //     }),
-        //     prisma.manager.createMany({
-        //         data: validManagerEmails.map((email) => ({
-        //             email: email,
-        //             organizationId: organizationId
-        //         }))
-        //     })
-        // ]);
+        const supervisor = await prisma.$transaction([
+            prisma.user.createMany({
+                data: validEmails.map((email) => ({ email })),
+                skipDuplicates: true
+            }),
+            prisma.checker.createMany({
+                data: validCheckerEmails.map((email) => ({
+                    email: email,
+                    organizationId: organizationId
+                }))
+            }),
+            prisma.manager.createMany({
+                data: validManagerEmails.map((email) => ({
+                    email: email,
+                    organizationId: organizationId
+                }))
+            })
+        ]);
 
-        const supervisor = await prisma.$transaction(async (prisma) => {
-            const result = {
-                checker: [],
-                manager: []
-            };
-            for (const checkerEmail of validCheckerEmails) {
-                try {
-                    await prisma.user.create({
-                        data: {
-                            email: checkerEmail,
-                            checker: {
-                                create: {
-                                    organizationId: organizationId
-                                }
-                            }
-                        }
-                    });
-                    result.checker.push(checkerEmail);
-                } catch (err) {
-                    // console.log(err);
-                }
-            }
-
-            for (const managerEmail of validManagerEmails) {
-                try {
-                    await prisma.user.create({
-                        data: {
-                            email: managerEmail,
-                            manager: {
-                                create: {
-                                    organizationId: organizationId
-                                }
-                            }
-                        }
-                    });
-                    result.manager.push(managerEmail);
-                } catch (err) {
-                    // console.log(err);
-                }
-            }
-            return result;
-        });
-
-        response_200(res, 'supervisors added successfully', supervisor);
+        response_200(res, 'supervisors added successfully');
     } catch (err) {
         response_500(res, 'Error adding supervisor!', err);
     }
