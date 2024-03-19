@@ -61,6 +61,10 @@ export async function adminRegister(req, res) {
     try {
         const { email, name, password, organizationName } = req.body;
 
+        if (!email || !name || !password || !organizationName) {
+            return response_400(res, 'Feilds missing, check documentation');
+        }
+
         const existingUser = await prisma.user.findUnique({
             where: {
                 email: email
@@ -109,6 +113,10 @@ export async function peoplesRegister(req, res) {
     try {
         const { email, name, password, organizationId } = req.body;
 
+        if (!email || !name || !password || !organizationId) {
+            return response_400(res, 'Feilds missing, check documentation');
+        }
+
         const existingUser = await prisma.user.findUnique({
             where: {
                 email: email
@@ -153,7 +161,11 @@ export async function validate(req, res) {
     try {
         const { email, organizationId, role } = req.body;
 
-        if (role != 'manager' && role != 'checker') {
+        if (!email || !role || !organizationId) {
+            return response_400(res, 'Feilds missing, check documentation');
+        }
+
+        if (role != userRole.manager && role != userRole.checker) {
             return response_400(res, 'Not a valid role for validation');
         }
 
@@ -181,8 +193,15 @@ export async function supervisorRegister(req, res) {
     try {
         const { email, name, password, role } = req.body;
 
-        if (!(role in userRole)) {
-            return response_400(res, 'Not a valid Role');
+        if (!email || !name || !password || !role) {
+            return response_400(res, 'Feilds missing, check documentation');
+        }
+
+        if (role != userRole.manager && role != userRole.checker) {
+            return response_400(
+                res,
+                'Not a valid role for supervisor registration'
+            );
         }
         const hashedPassword = await hash(password, 10);
 
