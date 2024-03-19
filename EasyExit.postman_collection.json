@@ -1,0 +1,146 @@
+{
+	"info": {
+		"_postman_id": "2d5f0d21-e9cc-429f-ac8a-f003c2597bc3",
+		"name": "EasyExit",
+		"description": "API Documentation of SE Project termed as EasyExit: Hostel Outpass Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "25553200",
+		"_collection_link": "https://se-project-iiita.postman.co/workspace/se-project-Workspace~3ffbdcc7-ed7d-44c9-8215-7c62ed24e48a/collection/26807057-2d5f0d21-e9cc-429f-ac8a-f003c2597bc3?action=share&source=collection_link&creator=25553200"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"item": [
+						{
+							"name": "Register Admin",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\":\"Harshal\",\r\n    \"email\":\"harshal@gmail.com\",\r\n    \"password\":\"12345678\",\r\n    \"organizationName\":\"IIITA\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseURL}}/auth/register/admin"
+							},
+							"response": []
+						},
+						{
+							"name": "peoples register",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"swarop@gmail.com\",\r\n    \"password\":\"12345678\",\r\n    \"name\": \"swaroop\",\r\n    \"organizationId\": \"b85d355d-c2f3-42fb-a015-961538f94713\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseURL}}/auth/register/peoples"
+							},
+							"response": []
+						},
+						{
+							"name": "validate supervisor",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"checker@gmail.com\",\r\n    \"organizationId\":\"8bf0f35b-a913-482e-8e6e-fd0702e36a91\",\r\n    \"role\":\"checker\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseURL}}/auth/validation"
+							},
+							"response": []
+						}
+					],
+					"description": "`/register` Route"
+				},
+				{
+					"name": "Login (Unified)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"swarop@gmail.com\",\r\n    \"password\":\"12345678\",\r\n    \"role\": \"peoples\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseURL}}/auth/login"
+					},
+					"response": []
+				}
+			],
+			"description": "`/auth` Route"
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Add supervisors",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": \"b85d355d-c2f3-42fb-a015-961538f94713\",\r\n    \"checkerEmails\": [\"rajeshaserr@x.com\", \"piyusrhsafer@y.com\"],\r\n    \"managerEmails\":[\"xsre@x.com\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseURL}}/admin/add/supervisors"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "http://localhost:4000/api",
+			"type": "string"
+		}
+	]
+}

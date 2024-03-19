@@ -26,7 +26,7 @@ model User {
 
 /// Admin creates organizations, add users and assigns roles to users like people, manager, checker
 model Admin {
-  email            String       @id
+  email          String       @id
   user           User         @relation(fields: [email], references: [email])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
@@ -37,7 +37,7 @@ model Admin {
 
 /// Manager can approve the token request
 model Manager {
-  email            String       @id
+  email          String       @id
   user           User         @relation(fields: [email], references: [email])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
@@ -50,7 +50,7 @@ model Manager {
 
 /// Checker can check the token status and check entry and exit
 model Checker {
-  email            String       @id
+  email          String       @id
   user           User         @relation(fields: [email], references: [email])
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
@@ -71,8 +71,8 @@ model Organization {
   admin                 Admin[]
   checker               Checker[]
   Manager               Manager[]
-  unrestrictedStartTime DateTime  @db.Time() @default(dbgenerated("100000"))
-  unrestrictedEndTime   DateTime  @db.Time() @default(dbgenerated("180000"))
+  unrestrictedStartTime DateTime  @default(dbgenerated("100000")) @db.Time()
+  unrestrictedEndTime   DateTime  @default(dbgenerated("180000")) @db.Time()
 
   @@index([id, name])
 }
@@ -80,7 +80,7 @@ model Organization {
 /// Students schema
 model Peoples {
   user           User         @relation(fields: [email], references: [email])
-  email            String       @id
+  email          String       @id
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
@@ -119,17 +119,20 @@ model Token {
   startTime DateTime
   endTime   DateTime
 
-  acceptedTime  DateTime
+  acceptedTime  DateTime?
   acceptedBy    Manager? @relation(fields: [acceptedByUid], references: [email])
-  acceptedByUid String
+  acceptedByUid String?
 
-  exitTime     DateTime
-  returnedTime DateTime
+  exitTime     DateTime?
+  returnedTime DateTime?
 
   checkedBy    Checker? @relation(fields: [checkedByUid], references: [email])
-  checkedByUid String
+  checkedByUid String?
 
   lateEntry lateEntry?
+
+  pass         String?
+  passValidity DateTime? @db.Time()
 
   @@index([token])
   @@index([issuedById, organizationId])

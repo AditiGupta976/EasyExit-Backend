@@ -44,7 +44,8 @@ export async function login(req, res) {
         }
         const payLoad = {
             email: existingUser.email,
-            role: req.body.role
+            role: req.body.role,
+            organizationId: existingUser.organizationId     // (swaroop) check it
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been logged In', {

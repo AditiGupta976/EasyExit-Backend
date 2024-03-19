@@ -9,6 +9,7 @@
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prettier": "prettier --write \"src/**/*.js\"",
+    "migrate": "prisma migrate dev --name init",
     "pushdb": "prisma db push",
     "pulldb": "prisma db pull"
   },
