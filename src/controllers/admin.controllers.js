@@ -10,7 +10,7 @@ export async function addSupervisor(req, res) {
     try {
         let checkerEmails = req.body.checkerEmails; // receives a list of emails
         let managerEmails = req.body.managerEmails;
-        const organizationId = req.body.organizationId;
+        const organizationId = req.user.organizationId;
 
         if (!organizationId)
             return response_404(res, 'Organization ID is required!');
@@ -24,23 +24,17 @@ export async function addSupervisor(req, res) {
         }
 
         const validCheckerEmails = checkerEmails.filter(
-            (email) =>
-                typeof email === 'string' &&
-                email.trim() !== '' &&
-                emailValidater(email)
+            (email) => typeof email === 'string' && emailValidater(email)
         );
         const validManagerEmails = managerEmails.filter(
-            (email) =>
-                typeof email === 'string' &&
-                email.trim() !== '' &&
-                emailValidater(email)
+            (email) => typeof email === 'string' && emailValidater(email)
         );
 
         if (validCheckerEmails.length === 0 && validManagerEmails.length === 0)
             return response_404(res, 'Invalid Checker or Manager emails!');
 
         // const validEmails = [...validCheckerEmails, ...validManagerEmails];
-        const supervisor = await prisma.$transaction([
+        await prisma.$transaction([
             prisma.user.createMany({
                 data: validEmails.map((email) => ({ email })),
                 skipDuplicates: true

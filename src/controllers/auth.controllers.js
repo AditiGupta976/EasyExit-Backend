@@ -9,17 +9,15 @@ import {
     response_404,
     response_500
 } from '../utils/responseCodes.js';
-import userRole from '../utils/role.js';
+import ROLE from '../utils/role.js';
 
 export async function login(req, res) {
     try {
         const { email, password, role } = req.body;
         if (!email || !password || !role) {
-            return response_400(res,'Fields missing, check documentation');
+            return response_400(res, 'Fields missing, check documentation');
         }
-        if (
-            !['peoples', 'admin', 'checker', 'manager'].includes(role)
-        ) {
+        if (!(role in ROLE)) {
             return response_400(res, 'Unavailable Role');
         }
         const existingUser = await prisma[role].findUnique({
@@ -81,7 +79,7 @@ export async function adminRegister(req, res) {
         }
         const hashedPassword = await hash(password, 10);
 
-        await prisma.organization.create({
+        const data = await prisma.organization.create({
             data: {
                 name: organizationName,
                 admin: {
@@ -95,12 +93,16 @@ export async function adminRegister(req, res) {
                         }
                     }
                 }
+            },
+            select: {
+                id: true
             }
         });
 
         const payLoad = {
             email: email,
-            role: userRole.admin
+            role: ROLE.admin,
+            organizationId: data.id
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been Registered', {
@@ -148,7 +150,8 @@ export async function peoplesRegister(req, res) {
 
         const payLoad = {
             email: email,
-            role: userRole.peoples
+            role: ROLE.peoples,
+            organizationId: organizationId
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been Registered', {
@@ -170,7 +173,7 @@ export async function validate(req, res) {
             return response_400(res, 'Feilds missing, check documentation');
         }
 
-        if (role != userRole.manager && role != userRole.checker) {
+        if (role != ROLE.manager && role != ROLE.checker) {
             return response_400(res, 'Not a valid role for validation');
         }
 
@@ -202,7 +205,7 @@ export async function supervisorRegister(req, res) {
             return response_400(res, 'Feilds missing, check documentation');
         }
 
-        if (role != userRole.manager && role != userRole.checker) {
+        if (role != ROLE.manager && role != ROLE.checker) {
             return response_400(
                 res,
                 'Not a valid role for supervisor registration'
@@ -210,19 +213,27 @@ export async function supervisorRegister(req, res) {
         }
         const hashedPassword = await hash(password, 10);
 
-        await prisma.user.update({
+        const data = await prisma.user.update({
             where: {
                 email: email
             },
             data: {
                 name: name,
                 password: hashedPassword
+            },
+            select: {
+                [role]: {
+                    select: {
+                        organizationId: true
+                    }
+                }
             }
         });
 
         const payLoad = {
             email: email,
-            role: role
+            role: role,
+            organizationId: data[role].organizationId
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been Registered', {
