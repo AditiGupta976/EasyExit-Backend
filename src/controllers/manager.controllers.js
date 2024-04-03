@@ -1,9 +1,9 @@
-import prisma from '../config/db.config';
+import prisma from '../config/db.config.js';
 import {
     response_200,
     response_400,
     response_500
-} from '../utils/responseCodes';
+} from '../utils/responseCodes.js';
 
 export async function acceptToken(req, res) {}
 
