@@ -39,3 +39,16 @@ export async function isChecker(req, res, next) {
         return response_500(res, 'Error while checking checker', error);
     }
 }
+
+export async function isPeoples(req, res, next) {
+    try {
+        if (req.user?.role == ROLE.peoples) {
+            next();
+        } else {
+            return response_403(res, 'User access required');
+        }
+    } catch (error) {
+        console.error(error);
+        return response_500(res, 'Error while checking user', error);
+    }
+}

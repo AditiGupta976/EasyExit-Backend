@@ -7,7 +7,8 @@ import userRouter from './user.routes.js';
 import {
     isAdmin,
     isChecker,
-    isManager
+    isManager,
+    isPeoples
 } from '../middlewares/roleVerification.middleware.js';
 import userAuth from '../middlewares/auth.middleware.js';
 import { middlewareEmailValidater } from '../validaters/email.validaters.js';
@@ -18,6 +19,6 @@ router.use('/auth', middlewareEmailValidater, authRouter);
 router.use('/admin', userAuth, isAdmin, adminRouter);
 router.use('/manager', userAuth, isManager, managerRoutes);
 router.use('/checker', userAuth, isChecker, checkerRouter);
-router.use('/user', userAuth, userRouter);
+router.use('/user', userAuth, isPeoples, userRouter);
 
 export default router;
