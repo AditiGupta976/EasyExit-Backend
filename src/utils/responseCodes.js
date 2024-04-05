@@ -30,6 +30,13 @@ export function response_400(res, message) {
     });
 }
 
+export function response_304(res, message) {
+    return res.status(304).json({
+        status: 'Not modified',
+        message
+    });
+}
+
 export function response_401(res, message) {
     return res.status(401).json({
         status: 'error',

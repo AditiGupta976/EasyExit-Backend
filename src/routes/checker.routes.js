@@ -1,7 +1,11 @@
 import { Router } from 'express';
-import { checkToken } from '../controllers/checker.controllers.js';
+import {
+    checkToken,
+    getCheckedTokens
+} from '../controllers/checker.controllers.js';
 const checkerRouter = Router();
 
-checkerRouter.post('/checkToken', checkToken);
+checkerRouter.patch('/checkToken', checkToken);
+checkerRouter.get('/checkedTokens', getCheckedTokens);
 
 export default checkerRouter;

@@ -1,7 +1,7 @@
 import prisma from '../config/db.config.js';
 import {
     response_200,
-    response_404,
+    response_400,
     response_500
 } from '../utils/responseCodes.js';
 import { emailValidater } from '../validaters/email.validaters.js';
@@ -13,9 +13,9 @@ export async function addSupervisor(req, res) {
         const organizationId = req.user.organizationId;
 
         if (!organizationId)
-            return response_404(res, 'Organization ID is required!');
+            return response_400(res, 'Organization ID is required!');
         if (!checkerEmails && !managerEmails)
-            return response_404(res, 'Checker or Manager emails are required!');
+            return response_400(res, 'Checker or Manager emails are required!');
         if (!checkerEmails) {
             checkerEmails = [];
         }
@@ -31,7 +31,7 @@ export async function addSupervisor(req, res) {
         );
 
         if (validCheckerEmails.length === 0 && validManagerEmails.length === 0)
-            return response_404(res, 'Invalid Checker or Manager emails!');
+            return response_400(res, 'Invalid Checker or Manager emails!');
 
         // const validEmails = [...validCheckerEmails, ...validManagerEmails];
         await prisma.$transaction([
@@ -56,5 +56,50 @@ export async function addSupervisor(req, res) {
         response_200(res, 'supervisors added successfully');
     } catch (err) {
         response_500(res, 'Error adding supervisor!', err);
+    }
+}
+
+export async function getSupervisor(req, res) {
+    try {
+        const organizationId = req.user.organizationId;
+        if (!organizationId)
+            return response_400(res, 'Organization ID is required!');
+
+        const supervisors = await prisma.user.findMany({
+            where: {
+                organizationId: organizationId,
+                OR: [
+                    {
+                        NOT: {
+                            checker: null
+                        }
+                    },
+                    {
+                        NOT: {
+                            manager: null
+                        }
+                    }
+                ]
+            },
+            select: {
+                name: true,
+                email: true,
+                checker: true,
+                manager: true
+            }
+        });
+
+        const formattedData = supervisors.reduce(
+            (acc, supervisor) => {
+                acc[supervisor.manager !== null ? 'manager' : 'checker'].push(
+                    supervisor
+                );
+                return acc;
+            },
+            { manager: [], checker: [] }
+        );
+        response_200(res, 'Supervisors fetched successfully', formattedData);
+    } catch (err) {
+        response_500(res, 'Error fetching Supervisors!', err);
     }
 }

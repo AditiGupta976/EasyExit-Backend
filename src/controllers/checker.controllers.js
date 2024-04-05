@@ -3,26 +3,21 @@ import prisma from '../config/db.config.js';
 
 import {
     response_201,
-    response_401,
     response_400,
-    response_500
+    response_500,
+    response_404
 } from '../utils/responseCodes.js';
-import ROLE from '../utils/role.js';
 
 export async function checkToken(req, res) {
     try {
-        const { email, organizationId, role } = req.user;
+        const { email, organizationId } = req.user;
         const { tokenId } = req.body;
 
         const currTime = new Date();
-
-        if (role !== ROLE.checker) {
-            return response_401(res, 'You are not authorized to check token');
-        }
-
         const token = await prisma.token.findUnique({
             where: {
-                token: tokenId
+                token: tokenId,
+                organizationId: organizationId
             },
             select: {
                 startTime: true,
@@ -32,10 +27,9 @@ export async function checkToken(req, res) {
             }
         });
 
-        if (token.organizationId !== organizationId) {
-            return response_401(res, 'You are not authorized to check token');
+        if (!token) {
+            return response_404(res, 'Token not found');
         }
-
         if (
             token.status !== TokenStatus.ISSUED ||
             token.status !== TokenStatus.IN_USE
@@ -83,4 +77,31 @@ export async function checkToken(req, res) {
     }
 }
 
-export async function getCheckedTokens(req, res) {}
+export async function getCheckedTokens(req, res) {
+    try {
+        const { email, organizationId } = req.user;
+
+        const tokens = await prisma.token.findMany({
+            where: {
+                organizationId: organizationId,
+                checkedByUid: {
+                    email: email
+                }
+            },
+            select: {
+                token: true,
+                reason: true,
+                startTime: true,
+                endTime: true,
+                exitTime: true,
+                returnedTime: true,
+                status: true
+            }
+        });
+
+        return response_201(res, 'Tokens checked by you', tokens);
+    } catch (error) {
+        console.error(error);
+        return response_500(res, 'Server Error', error);
+    }
+}
