@@ -1,18 +1,18 @@
-import prisma from '../config/db.config';
+import prisma from '../config/db.config.js';
 import {
     response_401,
     response_200,
     response_500,
     response_201
-} from '../utils/responseCodes';
-import ROLE from '../utils/role';
+} from '../utils/responseCodes.js';
+
 export async function requestToken(req, res) {
     try {
-        const { email, organizationId, role } = req.user;
+        const { email, organizationId } = req.user;
         const { reason, startTime, endTime } = req.body;
-
-        if (role !== ROLE.peoples) {
-            return response_401(res, 'You are not authorized to request token');
+        
+        if (!reason || !startTime || !endTime) {
+            return response_401(res, 'Please provide all the fields');
         }
 
         const token = await prisma.token.create({
@@ -37,3 +37,4 @@ export async function requestToken(req, res) {
         return response_500(res, 'Server Error', error);
     }
 }
+

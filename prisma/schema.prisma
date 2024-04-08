@@ -13,15 +13,16 @@ datasource db {
 
 /// User schema
 model User {
-  email     String   @id
-  name      String?
-  password  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  admin     Admin?
-  checker   Checker?
-  peoples   Peoples?
-  manager   Manager?
+  email      String   @id
+  name       String?
+  password   String?
+  profileImg String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  admin      Admin?
+  checker    Checker?
+  peoples    Peoples?
+  manager    Manager?
 }
 
 /// Admin creates organizations, add users and assigns roles to users like people, manager, checker
@@ -50,10 +51,11 @@ model Manager {
 
 /// Checker can check the token status and check entry and exit
 model Checker {
-  email          String       @id
-  user           User         @relation(fields: [email], references: [email])
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  organizationId String
+  email            String       @id
+  user             User         @relation(fields: [email], references: [email])
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  organizationId   String
+  organizationLogo String?
 
   token Token[]
 
@@ -120,7 +122,7 @@ model Token {
   endTime   DateTime
 
   acceptedTime  DateTime?
-  acceptedBy    Manager? @relation(fields: [acceptedByUid], references: [email])
+  acceptedBy    Manager?  @relation(fields: [acceptedByUid], references: [email])
   acceptedByUid String?
 
   exitTime     DateTime?

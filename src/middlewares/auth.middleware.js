@@ -1,4 +1,4 @@
-import { verify } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { response_401, response_500 } from '../utils/responseCodes.js';
 
 async function userAuth(req, res, next) {
@@ -8,7 +8,7 @@ async function userAuth(req, res, next) {
         if (authHeader === null || authHeader === undefined) {
             return response_401(res, 'Unauthorized');
         }
-        const payload = verify(
+        const payload = jwt.verify(
             authHeader.split(' ')[1],
             process.env.JWT_SECRET
         );
