@@ -10,14 +10,15 @@ import {
 
 export async function acceptToken(req, res) {
     try {
-        const { organizationId } = req.user;
+        const { organizationId, email } = req.user;
         const { token } = req.body;
         if (!token) {
             return response_400(res, 'Token is required');
         }
         const tokenData = await prisma.token.findUnique({
             where: {
-                token: token
+                token: token,
+                organizationId: organizationId
             },
             select: {
                 status: true
@@ -36,7 +37,13 @@ export async function acceptToken(req, res) {
                 organizationId: organizationId
             },
             data: {
-                status: TokenStatus.ISSUED
+                status: TokenStatus.ISSUED,
+                acceptedBy: {
+                    connect: {
+                        email: email
+                    }
+                },
+                acceptedTime: new Date()
             }
         });
         return response_200(res, 'Token accepted successfully', updatedToken);
@@ -47,14 +54,18 @@ export async function acceptToken(req, res) {
 
 export async function rejectToken(req, res) {
     try {
-        const { organizationId } = req.user;
-        const { token } = req.body;
+        const { organizationId, email } = req.user;
+        const { token, rejectionReason } = req.body;
         if (!token) {
             return response_400(res, 'Token is required');
         }
+        if (!rejectionReason) {
+            return response_400(res, 'Rejection reason is required');
+        }
         const tokenData = await prisma.token.findUnique({
             where: {
-                token: token
+                token: token,
+                organizationId: organizationId
             }
         });
         if (!tokenData) {
@@ -67,7 +78,14 @@ export async function rejectToken(req, res) {
                 status: TokenStatus.REQUESTED
             },
             data: {
-                status: TokenStatus.REJECTED
+                status: TokenStatus.REJECTED,
+                rejectionReason: rejectionReason,
+                acceptedBy: {
+                    connect: {
+                        email: email
+                    }
+                },
+                acceptedTime: new Date()
             }
         });
         return response_200(res, 'Token rejected successfully', updatedToken);

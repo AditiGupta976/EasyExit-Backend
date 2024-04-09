@@ -10,7 +10,7 @@ export async function requestToken(req, res) {
     try {
         const { email, organizationId } = req.user;
         const { reason, startTime, endTime } = req.body;
-        
+
         if (!reason || !startTime || !endTime) {
             return response_401(res, 'Please provide all the fields');
         }
@@ -37,4 +37,3 @@ export async function requestToken(req, res) {
         return response_500(res, 'Server Error', error);
     }
 }
-

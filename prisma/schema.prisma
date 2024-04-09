@@ -125,6 +125,8 @@ model Token {
   acceptedBy    Manager?  @relation(fields: [acceptedByUid], references: [email])
   acceptedByUid String?
 
+  rejectionReason String?
+
   exitTime     DateTime?
   returnedTime DateTime?
 

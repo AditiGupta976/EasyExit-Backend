@@ -56,7 +56,7 @@ export async function updateProfile(req, res) {
                 email: email
             },
             data: {
-                ...(name && {name: name}),
+                ...(name && { name: name }),
                 ...(password && { password: password }),
                 ...(newEmail && { email: newEmail }),
                 ...(organizationId && {
@@ -99,7 +99,7 @@ export async function getOrganizations(req, res) {
         const organizations = await prisma.organization.findMany({
             where: {
                 name: {
-                    contains: req.query?.name || '',
+                    contains: req.query?.name || ''
                 }
             },
             select: {
@@ -109,7 +109,11 @@ export async function getOrganizations(req, res) {
             take: 5
         });
 
-        return response_200(res, 'Organizations fetched successfully', organizations);
+        return response_200(
+            res,
+            'Organizations fetched successfully',
+            organizations
+        );
     } catch (error) {
         return response_500(res, 'Error fetching organizations', error);
     }

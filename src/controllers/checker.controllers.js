@@ -43,7 +43,8 @@ export async function checkToken(req, res) {
             }
             await prisma.token.update({
                 where: {
-                    token: tokenId
+                    token: tokenId,
+                    organizationId: organizationId
                 },
                 data: {
                     exitTime: currTime,
@@ -59,7 +60,8 @@ export async function checkToken(req, res) {
         } else {
             await prisma.token.update({
                 where: {
-                    token: tokenId
+                    token: tokenId,
+                    organizationId: organizationId
                 },
                 data: {
                     returnedTime: currTime,
@@ -84,9 +86,7 @@ export async function getCheckedTokens(req, res) {
         const tokens = await prisma.token.findMany({
             where: {
                 organizationId: organizationId,
-                checkedByUid: {
-                    email: email
-                }
+                checkedByUid: email
             },
             select: {
                 token: true,
