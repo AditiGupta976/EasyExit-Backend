@@ -32,18 +32,36 @@ export async function login(req, res) {
                         email: true,
                         password: true
                     }
-                }
+                },
+                organizationId: true
             }
         });
         if (!existingUser) {
             return response_404(res, 'User not found');
         }
-        const matchPassword = await compare(
-            password,
-            existingUser.user.password
-        );
-        if (!matchPassword) {
-            return response_401(res, 'Invalid email or password');
+        if (role == ROLE.checker || role == ROLE.manager) {
+            const hashedPassword = await hash(password, 10);
+            await prisma[role].update({
+                where: {
+                    email: email,
+                    organizationId: existingUser.organizationId
+                },
+                data: {
+                    user: {
+                        update: {
+                            password: hashedPassword
+                        }
+                    }
+                }
+            });
+        } else {
+            const matchPassword = await compare(
+                password,
+                existingUser.user.password
+            );
+            if (!matchPassword) {
+                return response_401(res, 'Invalid email or password');
+            }
         }
         const payLoad = {
             email: existingUser.email,
@@ -151,9 +169,7 @@ export async function adminRegister(req, res) {
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been Registered', {
-            token,
-            name: name,
-            email: email
+            token
         });
     } catch (error) {
         console.log(error);
@@ -222,9 +238,7 @@ export async function peoplesRegister(req, res) {
         };
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been Registered', {
-            token,
-            name: name,
-            email: email
+            token
         });
     } catch (error) {
         console.log(error);
@@ -232,42 +246,10 @@ export async function peoplesRegister(req, res) {
     }
 }
 
-export async function validate(req, res) {
-    try {
-        const { email, organizationId, role } = req.body;
-
-        if (!email || !role || !organizationId) {
-            return response_400(res, 'Feilds missing, check documentation');
-        }
-
-        if (role != ROLE.manager && role != ROLE.checker) {
-            return response_400(res, 'Not a valid role for validation');
-        }
-
-        const existingSupervisor = await prisma[role].findUnique({
-            where: {
-                organizationId: organizationId,
-                email: email
-            }
-        });
-        if (existingSupervisor) {
-            return response_200(res, 'validated for organization', {
-                email: email,
-                role: role
-            });
-        } else {
-            return response_400(res, 'Not registered for organization');
-        }
-    } catch (error) {
-        console.log(error);
-        return response_500(res, 'Error in Validating', error);
-    }
-}
-
 export async function supervisorRegister(req, res) {
     try {
         const { email, name, password, role } = req.body;
-        const profileImg = req?.file
+        let profileImg = req?.file
             ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
             : null;
 
@@ -280,7 +262,7 @@ export async function supervisorRegister(req, res) {
                     format: 'png',
                     allowed_formats: ['png', 'jpg', 'jpeg'],
                     overwrite: true,
-                    public_id: `${Date.now()}-post-${req.userId}`
+                    public_id: `${Date.now()}-profile-${req.userId}`
                 }
             );
             profileImg = imageUpload.secure_url;

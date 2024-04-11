@@ -51,11 +51,10 @@ model Manager {
 
 /// Checker can check the token status and check entry and exit
 model Checker {
-  email            String       @id
-  user             User         @relation(fields: [email], references: [email])
-  organization     Organization @relation(fields: [organizationId], references: [id])
-  organizationId   String
-  organizationLogo String?
+  email          String       @id
+  user           User         @relation(fields: [email], references: [email])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
 
   token Token[]
 
@@ -73,8 +72,9 @@ model Organization {
   admin                 Admin[]
   checker               Checker[]
   Manager               Manager[]
-  unrestrictedStartTime DateTime  @default(dbgenerated("100000")) @db.Time()
-  unrestrictedEndTime   DateTime  @default(dbgenerated("180000")) @db.Time()
+  unrestrictedStartTime DateTime  @default(dbgenerated("043000")) @db.Time()
+  unrestrictedEndTime   DateTime  @default(dbgenerated("123000")) @db.Time()
+  organizationLogo      String?
 
   @@index([id, name])
 }

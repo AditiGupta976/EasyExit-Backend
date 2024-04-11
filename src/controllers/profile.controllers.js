@@ -5,6 +5,7 @@ import {
     response_500
 } from '../utils/responseCodes.js';
 import { hash } from 'bcrypt';
+import ROLE from '../utils/role.js';
 
 export async function getProfile(req, res) {
     try {
@@ -44,9 +45,26 @@ export async function getProfile(req, res) {
 
 export async function updateProfile(req, res) {
     try {
-        const { email } = req.user;
+        const { email, role } = req.user;
         let { name, password, organizationId, email: newEmail } = req.body;
+        let profileImg = req?.file
+            ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+            : null;
 
+        if (profileImg) {
+            const imageUpload = await cloudinary.v2.uploader.upload(
+                profileImg,
+                {
+                    resource_type: 'image',
+                    folder: 'profile',
+                    format: 'png',
+                    allowed_formats: ['png', 'jpg', 'jpeg'],
+                    overwrite: true,
+                    public_id: `${Date.now()}-profile-${req.userId}`
+                }
+            );
+            profileImg = imageUpload.secure_url;
+        }
         if (password) {
             password = await hash(password, 10);
         }
@@ -59,7 +77,8 @@ export async function updateProfile(req, res) {
                 ...(name && { name: name }),
                 ...(password && { password: password }),
                 ...(newEmail && { email: newEmail }),
-                ...(organizationId && {
+                ...(profileImg && { profileImg: profileImg }),
+                ...((organizationId && role === ROLE.peoples) && {
                     [role]: {
                         update: {
                             organization: {
@@ -108,7 +127,6 @@ export async function getOrganizations(req, res) {
             },
             take: 5
         });
-
         return response_200(
             res,
             'Organizations fetched successfully',
