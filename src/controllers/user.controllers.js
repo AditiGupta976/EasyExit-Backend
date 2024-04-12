@@ -1,3 +1,4 @@
+import { TokenStatus } from '@prisma/client';
 import prisma from '../config/db.config.js';
 import {
     response_401,
@@ -9,7 +10,7 @@ import {
 export async function requestToken(req, res) {
     try {
         const { email, organizationId } = req.user;
-        const { reason, startTime, endTime } = req.body;
+        const { reason, startTime, endTime, heading } = req.body;
 
         if (!reason || !startTime || !endTime) {
             return response_401(res, 'Please provide all the fields');
@@ -19,6 +20,7 @@ export async function requestToken(req, res) {
             data: {
                 reason: reason,
                 startTime: startTime,
+                heading: heading,
                 endTime: endTime,
                 organizationId: organizationId,
                 issuedBy: {
@@ -32,6 +34,124 @@ export async function requestToken(req, res) {
             }
         });
         response_201(res, 'Token has been requested', token);
+    } catch (error) {
+        console.error(error);
+        return response_500(res, 'Server Error', error);
+    }
+}
+
+export async function getAcceptedOutpasses(req, res) {
+    try {
+        const { email, organizationId } = req.user;
+        const outpasses = await prisma.peoples.findUnique({
+            where: {
+                email: email,
+                organizationId: organizationId
+            },
+            select: {
+                token: {
+                    where: {
+                        OR: [{
+                            status: TokenStatus.ISSUED
+                        },{
+                            status: TokenStatus.EXPIRED
+                        }]
+                    },
+                    select: {
+                        token: true,
+                        heading: true,
+                        startTime: true,
+                        endTime: true,
+                        status: true,
+                        acceptedBy: {
+                            select: {
+                                user: {
+                                    select: {
+                                        name: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
+        });
+
+        const formattedData = outpasses.token.map((token) => ({
+            token: token.token,
+            heading: token.heading,
+            startTime: token.startTime,
+            endTime: token.endTime,
+            status: token.status,
+            acceptedBy: token.acceptedBy.user.name
+        }));
+
+        return response_200(
+            res,
+            'Accepted Outpasses fetched successfully',
+            formattedData
+        );
+    } catch (error) {
+        console.error(error);
+        return response_500(res, 'Server Error', error);
+    }
+}
+
+export async function getRejectedOutpasses(req, res) {
+    try {
+        const { email, organizationId } = req.user;
+        const outpasses = await prisma.peoples.findUnique({
+            where: {
+                email: email,
+                organizationId: organizationId
+            },
+            select: {
+                token: {
+                    where: {
+                        status: TokenStatus.REJECTED
+                    },
+                    select: {
+                        token: true,
+                        heading: true,
+                        rejectionReason: true,
+                        startTime: true,
+                        endTime: true,
+                        status: true,
+                        acceptedBy: {
+                            select: {
+                                user: {
+                                    select: {
+                                        name: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
+        });
+
+        const formattedData = outpasses.token.map((token) => ({
+            token: token.token,
+            heading: token.heading,
+            reason: token.rejectionReason,
+            startTime: token.startTime,
+            endTime: token.endTime,
+            status: token.status,
+            acceptedBy: token.acceptedBy.user.name
+        }));
+
+        return response_200(
+            res,
+            'Rejected Outpasses fetched successfully',
+            formattedData
+        );
     } catch (error) {
         console.error(error);
         return response_500(res, 'Server Error', error);

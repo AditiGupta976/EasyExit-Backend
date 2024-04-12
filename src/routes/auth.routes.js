@@ -3,8 +3,7 @@ import {
     adminRegister,
     login,
     peoplesRegister,
-    supervisorRegister,
-    validate
+    supervisorRegister
 } from '../controllers/auth.controllers.js';
 import upload from '../middlewares/multer.middleware.js';
 
@@ -28,7 +27,6 @@ authRouter.post(
     '/register/supervisor',
     upload.single('profileImg'),
     supervisorRegister
-); //Manager and checker
-authRouter.post('/validation', validate);
+);
 
 export default authRouter;

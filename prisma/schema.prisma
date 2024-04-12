@@ -13,16 +13,17 @@ datasource db {
 
 /// User schema
 model User {
-  email      String   @id
-  name       String?
-  password   String?
-  profileImg String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  admin      Admin?
-  checker    Checker?
-  peoples    Peoples?
-  manager    Manager?
+  email       String   @id
+  name        String?
+  password    String?
+  profileImg  String?
+  phoneNumber Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  admin       Admin?
+  checker     Checker?
+  peoples     Peoples?
+  manager     Manager?
 }
 
 /// Admin creates organizations, add users and assigns roles to users like people, manager, checker
@@ -107,9 +108,9 @@ enum TokenStatus {
 
 /// Token schema
 model Token {
-  token  String @id @default(uuid())
-  reason String
-
+  token     String   @id @default(uuid())
+  reason    String
+  heading   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -121,8 +122,7 @@ model Token {
   startTime DateTime
   endTime   DateTime
 
-  acceptedTime  DateTime?
-  acceptedBy    Manager?  @relation(fields: [acceptedByUid], references: [email])
+  acceptedBy    Manager? @relation(fields: [acceptedByUid], references: [email])
   acceptedByUid String?
 
   rejectionReason String?
