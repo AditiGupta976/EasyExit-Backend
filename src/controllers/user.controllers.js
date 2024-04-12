@@ -6,6 +6,7 @@ import {
     response_500,
     response_201
 } from '../utils/responseCodes.js';
+import ROLE from '../utils/role.js';
 
 export async function requestToken(req, res) {
     try {
@@ -51,11 +52,14 @@ export async function getAcceptedOutpasses(req, res) {
             select: {
                 token: {
                     where: {
-                        OR: [{
-                            status: TokenStatus.ISSUED
-                        },{
-                            status: TokenStatus.EXPIRED
-                        }]
+                        OR: [
+                            {
+                                status: TokenStatus.ISSUED
+                            },
+                            {
+                                status: TokenStatus.EXPIRED
+                            }
+                        ]
                     },
                     select: {
                         token: true,
@@ -67,7 +71,8 @@ export async function getAcceptedOutpasses(req, res) {
                             select: {
                                 user: {
                                     select: {
-                                        name: true
+                                        name: true,
+                                        phoneNumber: true
                                     }
                                 }
                             }
@@ -86,7 +91,8 @@ export async function getAcceptedOutpasses(req, res) {
             startTime: token.startTime,
             endTime: token.endTime,
             status: token.status,
-            acceptedBy: token.acceptedBy.user.name
+            acceptedBy: token.acceptedBy.user.name,
+            phoneNumber: token.acceptedBy.user.phoneNumber
         }));
 
         return response_200(
@@ -94,6 +100,60 @@ export async function getAcceptedOutpasses(req, res) {
             'Accepted Outpasses fetched successfully',
             formattedData
         );
+    } catch (error) {
+        console.error(error);
+        return response_500(res, 'Server Error', error);
+    }
+}
+
+export async function getToken(req, res) {
+    try {
+        const { role } = req.user;
+        const tokenId = req.params['tokenId'];
+
+        if (role !== ROLE.peoples) {
+            return response_401(
+                res,
+                'You are not authorized to access this route'
+            );
+        }
+
+        const token = await prisma.token.findUnique({
+            where: {
+                token: tokenId
+            },
+            select: {
+                token: true,
+                heading: true,
+                startTime: true,
+                endTime: true,
+                status: true,
+                rejectionReason: true,
+                acceptedBy: {
+                    select: {
+                        user: {
+                            select: {
+                                name: true,
+                                phoneNumber: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const formattedData = {
+            token: token.token,
+            heading: token.heading,
+            reason: token.rejectionReason,
+            startTime: token.startTime,
+            endTime: token.endTime,
+            status: token.status,
+            acceptedBy: token.acceptedBy.user.name,
+            phoneNumber: token.acceptedBy.user.phoneNumber
+        };
+
+        response_201(res, 'Token fetched successfully', formattedData);
     } catch (error) {
         console.error(error);
         return response_500(res, 'Server Error', error);
@@ -124,7 +184,8 @@ export async function getRejectedOutpasses(req, res) {
                             select: {
                                 user: {
                                     select: {
-                                        name: true
+                                        name: true,
+                                        phoneNumber: true
                                     }
                                 }
                             }
@@ -144,7 +205,8 @@ export async function getRejectedOutpasses(req, res) {
             startTime: token.startTime,
             endTime: token.endTime,
             status: token.status,
-            acceptedBy: token.acceptedBy.user.name
+            acceptedBy: token.acceptedBy.user.name,
+            phoneNumber: token.acceptedBy.user.phoneNumber
         }));
 
         return response_200(

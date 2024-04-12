@@ -46,7 +46,13 @@ export async function getProfile(req, res) {
 export async function updateProfile(req, res) {
     try {
         const { email, role } = req.user;
-        let { name, password, organizationId, email: newEmail, phoneNumber } = req.body;
+        let {
+            name,
+            password,
+            organizationId,
+            email: newEmail,
+            phoneNumber
+        } = req.body;
         let profileImg = req?.file
             ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
             : null;
@@ -79,17 +85,18 @@ export async function updateProfile(req, res) {
                 ...(newEmail && { email: newEmail }),
                 ...(phoneNumber && { phoneNumber: phoneNumber }),
                 ...(profileImg && { profileImg: profileImg }),
-                ...((organizationId && role === ROLE.peoples) && {
-                    [role]: {
-                        update: {
-                            organization: {
-                                connect: {
-                                    id: organizationId
+                ...(organizationId &&
+                    role === ROLE.peoples && {
+                        [role]: {
+                            update: {
+                                organization: {
+                                    connect: {
+                                        id: organizationId
+                                    }
                                 }
                             }
                         }
-                    }
-                })
+                    })
             }
         });
 

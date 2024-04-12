@@ -98,11 +98,8 @@ enum TokenStatus {
   REQUESTED
   ISSUED
   REJECTED
-  // When user is not late and returned
   EXPIRED
   IN_USE
-  RETURNED_BEFORE_ISSUED
-  RETURNED_AFTER_ISSUED
   LATE
 }
 
