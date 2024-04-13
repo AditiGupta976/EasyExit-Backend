@@ -89,33 +89,33 @@ export async function adminRegister(req, res) {
             unrestrictedStartTime,
             unrestrictedEndTime
         } = req.body;
-        let {
-            organizationLogo: [organizationLogo],
-            profileImg: [profileImg]
-        } = req.files;
+        let { organizationLogo, profileImg } = req.body;
         if (organizationLogo) {
-            const dataURI = `data:${organizationLogo.mimetype};base64,${organizationLogo.buffer.toString('base64')}`;
-
-            const imageUpload = await cloudinary.v2.uploader.upload(dataURI, {
-                resource_type: 'image',
-                folder: 'organization',
-                format: 'png',
-                allowed_formats: ['png', 'jpg', 'jpeg'],
-                overwrite: true,
-                public_id: `${Date.now()}-organization-${organizationName}`
-            });
+            const imageUpload = await cloudinary.v2.uploader.upload(
+                organizationLogo,
+                {
+                    resource_type: 'image',
+                    folder: 'organization',
+                    format: 'png',
+                    allowed_formats: ['png', 'jpg', 'jpeg'],
+                    overwrite: true,
+                    public_id: `${Date.now()}-organization-${organizationName}`
+                }
+            );
             organizationLogo = imageUpload.secure_url;
         }
         if (profileImg) {
-            const dataURI = `data:${profileImg.mimetype};base64,${profileImg.buffer.toString('base64')}`;
-            const imageUpload = await cloudinary.v2.uploader.upload(dataURI, {
-                resource_type: 'image',
-                folder: 'profile',
-                format: 'png',
-                allowed_formats: ['png', 'jpg', 'jpeg'],
-                overwrite: true,
-                public_id: `${Date.now()}-profile-${name}`
-            });
+            const imageUpload = await cloudinary.v2.uploader.upload(
+                profileImg,
+                {
+                    resource_type: 'image',
+                    folder: 'profile',
+                    format: 'png',
+                    allowed_formats: ['png', 'jpg', 'jpeg'],
+                    overwrite: true,
+                    public_id: `${Date.now()}-profile-${name}`
+                }
+            );
             profileImg = imageUpload.secure_url;
         }
 
@@ -180,9 +180,7 @@ export async function adminRegister(req, res) {
 export async function peoplesRegister(req, res) {
     try {
         const { email, name, password, organizationId } = req.body;
-        let profileImg = req?.file
-            ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
-            : null;
+        let profileImg = req.body.profileImg;
         if (profileImg) {
             const imageUpload = await cloudinary.v2.uploader.upload(
                 profileImg,
@@ -249,10 +247,7 @@ export async function peoplesRegister(req, res) {
 export async function supervisorRegister(req, res) {
     try {
         const { email, name, password, role } = req.body;
-        let profileImg = req?.file
-            ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
-            : null;
-
+        let profileImg = req.body.profileImg;
         if (profileImg) {
             const imageUpload = await cloudinary.v2.uploader.upload(
                 profileImg,
