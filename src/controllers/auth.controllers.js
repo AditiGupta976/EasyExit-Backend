@@ -64,7 +64,7 @@ export async function login(req, res) {
             }
         }
         const payLoad = {
-            email: existingUser.email,
+            email: existingUser.user.email,
             role: role,
             organizationId: existingUser.organizationId
         };
