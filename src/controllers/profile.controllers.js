@@ -123,22 +123,22 @@ export async function deleteProfile(req, res) {
 
 export async function getOrganizations(req, res) {
     try {
-        // const organizations = await prisma.organization.findMany({
-        //     where: {
-        //         name: {
-        //             contains: req.query?.name || ''
-        //         }
-        //     },
-        //     select: {
-        //         id: true,
-        //         name: true
-        //     },
-        //     take: 5
-        // });
+        const organizations = await prisma.organization.findMany({
+            where: {
+                name: {
+                    contains: req.query?.name || ''
+                }
+            },
+            select: {
+                id: true,
+                name: true
+            },
+            take: 5
+        });
         return response_200(
             res,
             'Organizations fetched successfully',
-            [{id: 'sdfsdf', name: "IIITA"}]
+            organizations
         );
     } catch (error) {
         return response_500(res, 'Error fetching organizations', error);

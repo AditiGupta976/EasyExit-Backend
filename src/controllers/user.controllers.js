@@ -109,8 +109,7 @@ export async function getAcceptedOutpasses(req, res) {
 export async function getToken(req, res) {
     try {
         const { role } = req.user;
-        const tokenId = req.params['tokenId'];
-
+        const tokenId = req.query['tokenId'];
         if (role !== ROLE.peoples) {
             return response_401(
                 res,
@@ -149,8 +148,8 @@ export async function getToken(req, res) {
             startTime: token.startTime,
             endTime: token.endTime,
             status: token.status,
-            acceptedBy: token.acceptedBy.user.name,
-            phoneNumber: token.acceptedBy.user.phoneNumber
+            acceptedBy: token.acceptedBy?.user.name,
+            phoneNumber: token.acceptedBy?.user.phoneNumber
         };
 
         response_201(res, 'Token fetched successfully', formattedData);
