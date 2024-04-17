@@ -163,6 +163,13 @@ enum NotificationStatus {
   INITIATED
 }
 
+enum NotificationTopic {
+  ANNOUNCEMENT
+  PEOPLES
+  MANAGER
+  CHECKER
+}
+
 model Notifications {
   notificaitonId String @id @default(uuid())
   title          String
@@ -170,7 +177,7 @@ model Notifications {
 
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
-  topic          String
+  topic          NotificationTopic
 
   notificationStatus NotificationStatus @default(INITIATED)
 

@@ -5,7 +5,7 @@ import {
     response_500
 } from '../utils/responseCodes.js';
 import { hash } from 'bcrypt';
-import ROLE from '../utils/role.js';
+import { ROLE } from '../utils/role.js';
 
 export async function getProfile(req, res) {
     try {

@@ -4,22 +4,27 @@ import {
     response_400,
     response_500
 } from '../utils/responseCodes.js';
-import prisma, { connDB } from '../config/db.config.js';
+import prisma from '../config/db.config.js';
 
 import sendNotification from '../utils/sendFirebaseNotification.js';
+import { TOPIC } from '../utils/role.js';
 export const sendNotificationToTopic = async (req, res) => {
     try {
         const { title, description, topic } = req.body;
-        if (!title || !description || !topic)
-            response_400(res, 'Provide required parameter!');
+        const enumTopic = TOPIC?.[topic];
+        if (!title || !description || !topic) {
+            return response_400(res, 'Provide required parameter!');
+        } else if (!enumTopic) {
+            return response_400(res, 'Invalid topic!');
+        }
         const { email, organizationId } = req.user;
-        console.log(req.user);
+        
 
         const notification = await prisma.notifications.create({
             data: {
                 title,
                 description,
-                topic,
+                topic: enumTopic,
                 sender: {
                     connect: {
                         email: email
@@ -33,9 +38,8 @@ export const sendNotificationToTopic = async (req, res) => {
             }
         });
 
-        const actual_topic = `${organizationId}-${topic}`;
         sendNotification({ title, description })
-            .topic(actual_topic)
+            .topic(`${organizationId}-${topic}`)
             .then((response) => {
                 prisma.notifications.update({
                     where: {

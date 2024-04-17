@@ -6,7 +6,7 @@ import {
     response_500,
     response_201
 } from '../utils/responseCodes.js';
-import ROLE from '../utils/role.js';
+import { ROLE } from '../utils/role.js';
 
 export async function requestToken(req, res) {
     try {

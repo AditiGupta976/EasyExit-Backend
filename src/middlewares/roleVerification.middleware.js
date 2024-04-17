@@ -1,5 +1,5 @@
 import { response_403, response_500 } from '../utils/responseCodes.js';
-import ROLE from '../utils/role.js';
+import { ROLE } from '../utils/role.js';
 
 export async function isAdmin(req, res, next) {
     try {

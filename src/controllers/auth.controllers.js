@@ -9,7 +9,7 @@ import {
     response_404,
     response_500
 } from '../utils/responseCodes.js';
-import ROLE from '../utils/role.js';
+import { ROLE } from '../utils/role.js';
 import cloudinary from '../config/cloudinary.config.js';
 
 export async function login(req, res) {
