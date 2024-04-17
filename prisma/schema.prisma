@@ -24,6 +24,8 @@ model User {
   checker     Checker?
   peoples     Peoples?
   manager     Manager?
+
+  notificationSent Notifications[]
 }
 
 /// Admin creates organizations, add users and assigns roles to users like people, manager, checker
@@ -76,6 +78,8 @@ model Organization {
   unrestrictedStartTime DateTime  @default(dbgenerated("043000")) @db.Time()
   unrestrictedEndTime   DateTime  @default(dbgenerated("123000")) @db.Time()
   organizationLogo      String?
+
+  notifications Notifications[]
 
   @@index([id, name])
 }
@@ -151,4 +155,29 @@ model lateEntry {
   createdAt DateTime @default(now())
 
   @@index([token])
+}
+
+enum NotificationStatus {
+  SUCCESS
+  FAILED
+  INITIATED
+}
+
+model Notifications {
+  notificaitonId String @id @default(uuid())
+  title          String
+  description    String
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  topic          String
+
+  notificationStatus NotificationStatus @default(INITIATED)
+
+  sender      User     @relation(fields: [senderEmail], references: [email])
+  senderEmail String
+  createdAt   DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([senderEmail])
 }
