@@ -9,16 +9,17 @@ const app = initializeApp({
 });
 
 const sendNotification = (data) => {
-    ```
-    Usage: sendNotification({ name: "swaroop dora" }).topic("ann") -> promice;
-    sendNotification({ name: "swaroop dora" }).token("ann") -> promice;
-    ```;
-    const message = {
-        data
-    };
+    /**
+     * Usage:
+     * sendNotification({ name: "swaroop dora" }).topic("ann") -> promise;
+     * sendNotification({ name: "swaroop dora" }).token("ann") -> promise;
+     */
+    const message = { data };
+
     const sendMessage = () => {
         return getMessaging().send(message);
     };
+
     const topic = (topic_name) => {
         message.topic = topic_name;
         return sendMessage();
@@ -28,9 +29,21 @@ const sendNotification = (data) => {
         message.token = token_id;
         return sendMessage();
     };
+
     return {
-        topic, token
+        topic,
+        token
     };
 };
+
+// const message = {
+//     name: 'swaroop dora'
+// };
+
+// sendNotification(message)
+//     .topic('ann')
+//     .then((response) => {
+//         console.log(response);
+//     });
 
 export default sendNotification;

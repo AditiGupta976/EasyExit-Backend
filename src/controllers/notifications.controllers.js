@@ -34,6 +34,8 @@ export const sendNotificationToTopic = async (req, res) => {
         });
 
         const actual_topic = `${organizationId}-${topic}`;
+        console.log(actual_topic);
+        console.log(sendNotification())
         sendNotification({ title, description })
             .topic(actual_topic)
             .then((response) => {
@@ -46,12 +48,10 @@ export const sendNotificationToTopic = async (req, res) => {
                     }
                 });
                 console.log('Successfully sent message:', response);
-                response_200(res, 'Success', {
-                    response
-                });
+                
             })
             .catch((error) => {
-                prisma.notifications.update({
+                prisma.notifications.update({ 
                     where: {
                         notificaitonId: notification.notificaitonId
                     },
@@ -59,11 +59,9 @@ export const sendNotificationToTopic = async (req, res) => {
                         notificationStatus: NotificationStatus.FAILED
                     }
                 });
-                response_500(res, 'Failed!', {
-                    error
-                });
                 console.log('Error sending message:', error);
             });
+            response_200(res, 'Message initiated!');
     } catch (err) {
         response_500(res, 'error sending notification!', err);
     }
