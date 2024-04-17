@@ -34,8 +34,6 @@ export const sendNotificationToTopic = async (req, res) => {
         });
 
         const actual_topic = `${organizationId}-${topic}`;
-        console.log(actual_topic);
-        console.log(sendNotification())
         sendNotification({ title, description })
             .topic(actual_topic)
             .then((response) => {
@@ -61,9 +59,9 @@ export const sendNotificationToTopic = async (req, res) => {
                 });
                 console.log('Error sending message:', error);
             });
-            response_200(res, 'Message initiated!');
+        return response_200(res, 'Message initiated!');
     } catch (err) {
-        response_500(res, 'error sending notification!', err);
+        return response_500(res, 'error sending notification!', err);
     }
 };
 
@@ -79,8 +77,8 @@ export const getNotification = async (req, res) => {
             }
         });
 
-        response_200(res, 'Notifications received successfully', notification);
+        return response_200(res, 'Notifications received successfully', notification);
     } catch (err) {
-        response_500(res, 'error sending notification!', err);
+        return response_500(res, 'error sending notification!', err);
     }
 };
