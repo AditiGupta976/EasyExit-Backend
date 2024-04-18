@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch","fullTextIndex"]
 }
 
 datasource db {
@@ -74,7 +75,7 @@ model Organization {
   peoples               Peoples[]
   admin                 Admin[]
   checker               Checker[]
-  Manager               Manager[]
+  manager               Manager[]
   unrestrictedStartTime DateTime  @default(dbgenerated("043000")) @db.Time()
   unrestrictedEndTime   DateTime  @default(dbgenerated("123000")) @db.Time()
   organizationLogo      String?
@@ -143,6 +144,8 @@ model Token {
   @@index([issuedById, organizationId])
   @@index([acceptedByUid, organizationId])
   @@index([checkedByUid, organizationId])
+
+  @@fulltext([reason, heading])
 }
 
 /// Late Entry

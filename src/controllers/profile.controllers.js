@@ -23,7 +23,9 @@ export async function getProfile(req, res) {
             },
             select: {
                 email: true,
-                name: true
+                name: true,
+                phoneNumber: true,
+                profileImg: true,
             }
         });
 
@@ -34,7 +36,9 @@ export async function getProfile(req, res) {
             unrestrictedStartTime:
                 profile[role].organization.unrestrictedStartTime,
             unrestrictedEndTime: profile[role].organization.unrestrictedEndTime,
-            role: role
+            role: role,
+            phoneNumber: profile.phoneNumber,
+            profileImg: profile.profileImg
         };
 
         return response_200(res, 'Profile fetched successfully', formattedData);
@@ -49,13 +53,8 @@ export async function updateProfile(req, res) {
         let {
             name,
             password,
-            organizationId,
-            email: newEmail,
             phoneNumber
         } = req.body;
-        let profileImg = req?.file
-            ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
-            : null;
 
         if (profileImg) {
             const imageUpload = await cloudinary.v2.uploader.upload(
@@ -81,22 +80,9 @@ export async function updateProfile(req, res) {
             },
             data: {
                 ...(name && { name: name }),
-                ...(password && { password: password }),
-                ...(newEmail && { email: newEmail }),
-                ...(phoneNumber && { phoneNumber: phoneNumber }),
+                ...(password && { password: password }),    
+                ...(phoneNumber && { phoneNumber: Number(phoneNumber) }),
                 ...(profileImg && { profileImg: profileImg }),
-                ...(organizationId &&
-                    role === ROLE.peoples && {
-                        [role]: {
-                            update: {
-                                organization: {
-                                    connect: {
-                                        id: organizationId
-                                    }
-                                }
-                            }
-                        }
-                    })
             }
         });
 

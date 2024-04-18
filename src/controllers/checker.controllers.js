@@ -2,10 +2,11 @@ import { TokenStatus } from '@prisma/client';
 import prisma from '../config/db.config.js';
 
 import {
-    response_201,
+    response_200,
     response_400,
     response_500,
-    response_404
+    response_404,
+    response_204
 } from '../utils/responseCodes.js';
 
 export async function checkToken(req, res) {
@@ -23,7 +24,8 @@ export async function checkToken(req, res) {
                 startTime: true,
                 endTime: true,
                 status: true,
-                organizationId: true
+                organizationId: true,
+                exitTime: true
             }
         });
 
@@ -56,7 +58,7 @@ export async function checkToken(req, res) {
                     }
                 }
             });
-            return response_201(res, 'token verified successfully');
+            return response_204(res, 'token verified successfully');
         } else {
             await prisma.token.update({
                 where: {
@@ -71,7 +73,7 @@ export async function checkToken(req, res) {
                             : TokenStatus.EXPIRED
                 }
             });
-            return response_201(res, 'token verified successfully');
+            return response_204(res, 'token verified successfully');
         }
     } catch (error) {
         console.error(error);
@@ -82,24 +84,40 @@ export async function checkToken(req, res) {
 export async function getCheckedTokens(req, res) {
     try {
         const { email, organizationId } = req.user;
+        const search = req.query?.search;
 
         const tokens = await prisma.token.findMany({
             where: {
                 organizationId: organizationId,
-                checkedByUid: email
+                checkedByUid: email,
+                ...(search && {
+                    OR: [
+                        {
+                            heading: {
+                                search: search
+                            }
+                        },
+                        {
+                            reason: {
+                                search: search
+                            }
+                        },
+                        {
+                            token: search
+                        }
+                    ]
+                })
             },
             select: {
                 token: true,
-                reason: true,
-                startTime: true,
-                endTime: true,
+                heading: true,
                 exitTime: true,
                 returnedTime: true,
                 status: true
             }
         });
 
-        return response_201(res, 'Tokens checked by you', tokens);
+        return response_200(res, 'Tokens checked by you', tokens);
     } catch (error) {
         console.error(error);
         return response_500(res, 'Server Error', error);
