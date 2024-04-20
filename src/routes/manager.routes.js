@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import {
-    getAllTokens,
     getAcceptedToken,
     getRejectedToken,
     acceptToken,
@@ -11,7 +10,6 @@ import {
 
 const managerRouter = Router();
 
-managerRouter.get('/alltokens', getAllTokens);
 managerRouter.get('/tokens/pending', getPendingToken);
 managerRouter.get('/tokens/accepted', getAcceptedToken);
 managerRouter.get('/tokens/rejected', getRejectedToken);
