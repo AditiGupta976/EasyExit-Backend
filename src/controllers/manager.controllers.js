@@ -46,7 +46,6 @@ export async function acceptToken(req, res) {
                 }
             }
         });
-        console.log(updatedToken);
         return response_204(res, 'Token accepted successfully');
     } catch (error) {
         return response_500(res, 'Error while accepting token', error);
@@ -97,7 +96,6 @@ export async function rejectToken(req, res) {
 export async function getPendingToken(req, res) {
     try {
         const { organizationId } = req.user;
-        console.log(organizationId);
         const tokens = await prisma.token.findMany({
             where: {
                 organizationId: organizationId,
