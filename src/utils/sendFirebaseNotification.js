@@ -22,6 +22,7 @@ const sendNotification = (data) => {
 
     const topic = (topic_name) => {
         message.topic = topic_name;
+        console.log(message)
         return sendMessage();
     };
 

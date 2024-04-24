@@ -33,7 +33,7 @@ export async function checkToken(req, res) {
             return response_404(res, 'Token not found');
         }
         if (
-            token.status !== TokenStatus.ISSUED ||
+            token.status !== TokenStatus.ISSUED &&
             token.status !== TokenStatus.IN_USE
         ) {
             return response_400(res, 'Not a valid Token to use');
@@ -51,8 +51,8 @@ export async function checkToken(req, res) {
                 data: {
                     exitTime: currTime,
                     status: TokenStatus.IN_USE,
-                    checkedByUid: {
-                        connnect: {
+                    checkedBy:{
+                        connect:{
                             email: email
                         }
                     }

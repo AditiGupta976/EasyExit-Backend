@@ -71,7 +71,8 @@ export async function login(req, res) {
         const token = jwt.sign(payLoad, process.env.JWT_SECRET);
         return response_200(res, 'User has been logged In', {
             token,
-            name: existingUser.name
+            name: existingUser.user.name,
+            organizationId: existingUser.organizationId
         });
     } catch (error) {
         console.error(error);

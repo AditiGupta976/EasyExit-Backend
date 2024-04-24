@@ -7,18 +7,18 @@ import {
 import prisma from '../config/db.config.js';
 
 import sendNotification from '../utils/sendFirebaseNotification.js';
-import { TOPIC } from '../utils/role.js';
+// import { TOPIC } from '../utils/role.js';
 export const sendNotificationToTopic = async (req, res) => {
     try {
         const { title, description, topic } = req.body;
-        const enumTopic = TOPIC?.[topic];
+        // const enumTopic = TOPIC?.[topic];
+        const enumTopic = topic;
         if (!title || !description || !topic) {
             return response_400(res, 'Provide required parameter!');
         } else if (!enumTopic) {
             return response_400(res, 'Invalid topic!');
         }
         const { email, organizationId } = req.user;
-        
 
         const notification = await prisma.notifications.create({
             data: {
@@ -40,8 +40,8 @@ export const sendNotificationToTopic = async (req, res) => {
 
         sendNotification({ title, description })
             .topic(`${organizationId}-${topic}`)
-            .then((response) => {
-                prisma.notifications.update({
+            .then(async (response) => {
+                await prisma.notifications.update({
                     where: {
                         notificaitonId: notification.notificaitonId
                     },
@@ -50,10 +50,9 @@ export const sendNotificationToTopic = async (req, res) => {
                     }
                 });
                 console.log('Successfully sent message:', response);
-                
             })
-            .catch((error) => {
-                prisma.notifications.update({ 
+            .catch(async (error) => {
+                await prisma.notifications.update({
                     where: {
                         notificaitonId: notification.notificaitonId
                     },
@@ -81,7 +80,11 @@ export const getNotification = async (req, res) => {
             }
         });
 
-        return response_200(res, 'Notifications received successfully', notification);
+        return response_200(
+            res,
+            'Notifications received successfully',
+            notification
+        );
     } catch (err) {
         return response_500(res, 'error sending notification!', err);
     }

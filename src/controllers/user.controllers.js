@@ -140,7 +140,7 @@ export async function getToken(req, res) {
                 }
             }
         });
-
+        
         const formattedData = {
             token: token.token,
             heading: token.heading,
@@ -196,7 +196,7 @@ export async function getRejectedOutpasses(req, res) {
                 }
             }
         });
-
+            
         const formattedData = outpasses.token.map((token) => ({
             token: token.token,
             heading: token.heading,
@@ -211,6 +211,52 @@ export async function getRejectedOutpasses(req, res) {
         return response_200(
             res,
             'Rejected Outpasses fetched successfully',
+            formattedData
+        );
+    } catch (error) {
+        console.error(error);
+        return response_500(res, 'Server Error', error);
+    }
+}
+
+export async function getPendingOutpasses(req, res) {
+    try {
+        const { email, organizationId } = req.user;
+        const outpasses = await prisma.peoples.findUnique({
+            where: {
+                email: email,
+                organizationId: organizationId
+            },
+            select: {
+                token: {
+                    where: {
+                        status:TokenStatus.REQUESTED
+                    },
+                    select: {
+                        token: true,
+                        heading: true,
+                        startTime: true,
+                        endTime: true,
+                        status: true,
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
+        });
+
+        const formattedData = outpasses.token.map((token) => ({
+            token: token.token,
+            heading: token.heading,
+            startTime: token.startTime,
+            endTime: token.endTime,
+            status: token.status,
+        }));
+
+        return response_200(
+            res,
+            'Accepted Outpasses fetched successfully',
             formattedData
         );
     } catch (error) {
