@@ -39,7 +39,7 @@ export async function login(req, res) {
         if (!existingUser) {
             return response_404(res, 'User not found');
         }
-        if (role == ROLE.checker || role == ROLE.manager) {
+        if ((role == ROLE.checker || role == ROLE.manager) && !existingUser.user.password) {
             const hashedPassword = await hash(password, 10);
             await prisma[role].update({
                 where: {

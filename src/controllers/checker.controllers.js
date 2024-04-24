@@ -116,7 +116,7 @@ export async function getCheckedTokens(req, res) {
                 status: true
             }
         });
-
+        console.log(tokens);
         return response_200(res, 'Tokens checked by you', tokens);
     } catch (error) {
         console.error(error);

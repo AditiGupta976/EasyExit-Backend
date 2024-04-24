@@ -1,3 +1,4 @@
+import { TokenStatus } from '@prisma/client';
 import prisma from '../config/db.config.js';
 import {
     response_200,
@@ -54,9 +55,9 @@ export async function addSupervisor(req, res) {
             })
         ]);
 
-        response_204(res, 'Supervisors added successfully');
+        return response_204(res, 'Supervisors added successfully');
     } catch (err) {
-        response_500(res, 'Error adding supervisor!', err);
+        return response_500(res, 'Error adding supervisor!', err);
     }
 }
 
@@ -78,7 +79,7 @@ export async function getSupervisor(req, res) {
                             select: {
                                 name: true,
                                 phoneNumber: true,
-                                profileImg: true,
+                                profileImg: true
                             }
                         }
                     }
@@ -90,13 +91,13 @@ export async function getSupervisor(req, res) {
                             select: {
                                 name: true,
                                 phoneNumber: true,
-                                profileImg: true,
+                                profileImg: true
                             }
                         }
                     }
                 }
             }
-        })
+        });
 
         const formattedData = {
             checker: supervisors.checker.map((checker) => ({
@@ -112,8 +113,142 @@ export async function getSupervisor(req, res) {
                 profileImg: manager.user.profileImg
             }))
         };
-        response_200(res, 'Supervisors fetched successfully', formattedData);
+        return response_200(
+            res,
+            'Supervisors fetched successfully',
+            formattedData
+        );
     } catch (err) {
-        response_500(res, 'Error fetching Supervisors!', err);
+        return response_500(res, 'Error fetching Supervisors!', err);
+    }
+}
+
+export async function getCheckInOutpasses(req, res) {
+    try {
+        const organizationId = req.user.organizationId;
+        if (!organizationId)
+            return response_400(res, 'Organization ID is required!');
+
+        const checkInOutpasses = await prisma.organization.findUnique({
+            where: {
+                id: organizationId
+            },
+            select: {
+                checker: {
+                    select: {
+                        token: {
+                            where: {
+                                status: TokenStatus.IN_USE
+                            },
+                            select: {
+                                heading: true,
+                                exitTime: true,
+                                issuedBy: {
+                                    select: {
+                                        email: true,
+                                        user: {
+                                            select: {
+                                                name: true,
+                                                phoneNumber: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        console.log(checkInOutpasses.checker);
+
+        const formattedData = checkInOutpasses.checker.flatMap((item) =>
+            item.token.map((token) => ({
+                name: token.issuedBy.user.name,
+                email: token.issuedBy.email,
+                phoneNumber: token.issuedBy.user.phoneNumber,
+                heading: token.heading,
+                exitTime: token.exitTime,
+                
+            }))
+        );
+
+        return response_200(
+            res,
+            'Check-In Outpasses fetched successfully',
+            formattedData
+        );
+    } catch (err) {
+        response_500(res, 'Error fetching CheckIn Outpasses!', err);
+    }
+}
+
+export async function getCheckoutOutpass(req, res) {
+    try {
+        const organizationId = req.user.organizationId;
+        if (!organizationId)
+            return response_400(res, 'Organization ID is required!');
+
+        const checkoutOutpasses = await prisma.organization.findUnique({
+            where: {
+                id: organizationId
+            },
+            select: {
+                checker: {
+                    select: {
+                        token: {
+                            where: {
+                                OR: [
+                                    {
+                                        status: TokenStatus.EXPIRED
+                                    },
+                                    {
+                                        status: TokenStatus.LATE
+                                    }
+                                ]
+                            },
+                            select: {
+                                heading: true,
+                                exitTime: true,
+                                returnedTime: true,
+                                status: true,
+                                issuedBy: {
+                                    select: {
+                                        email: true,
+                                        user: {
+                                            select: {
+                                                name: true,
+                                                phoneNumber: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const formattedData = checkoutOutpasses.checker.flatMap((item) =>
+            item.token.map((token) => ({
+                name: token.issuedBy.user.name,
+                email: token.issuedBy.email,
+                phoneNumber: token.issuedBy.user.phoneNumber,
+                heading: token.heading,
+                exitTime: token.exitTime,
+                returnedTime: token.returnedTime,
+                status: token.status
+            }))
+        );
+
+        return response_200(
+            res,
+            'Check-Out Outpasses fetched successfully',
+            formattedData
+        );
+    } catch (err) {
+        response_500(res, 'Error fetching Checkout Outpasses!', err);
     }
 }
