@@ -1,4 +1,4 @@
-import { NotificationTopic } from '@prisma/client';
+// import { NotificationTopic } from '@prisma/client';
 
 export const ROLE = {
     peoples: 'peoples',
@@ -7,9 +7,9 @@ export const ROLE = {
     checker: 'checker'
 };
 
-export const TOPIC = {
-    announcement: NotificationTopic.ANNOUNCEMENT,
-    peoples: NotificationTopic.PEOPLES,
-    checker: NotificationTopic.CHECKER,
-    manager: NotificationTopic.MANAGER
-};
+// export const TOPIC = {
+//     announcement: NotificationTopic.ANNOUNCEMENT,
+//     peoples: NotificationTopic.PEOPLES,
+//     checker: NotificationTopic.CHECKER,
+//     manager: NotificationTopic.MANAGER
+// };
