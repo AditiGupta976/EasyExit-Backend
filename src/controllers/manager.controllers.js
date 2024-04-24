@@ -33,7 +33,7 @@ export async function acceptToken(req, res) {
         }
         const updatedToken = await prisma.token.update({
             where: {
-                id: token,
+                token: token,
                 status: TokenStatus.REQUESTED,
                 organizationId: organizationId
             },
@@ -43,8 +43,7 @@ export async function acceptToken(req, res) {
                     connect: {
                         email: email
                     }
-                },
-                acceptedTime: new Date()
+                }
             }
         });
         return response_204(res, 'Token accepted successfully');
@@ -85,57 +84,12 @@ export async function rejectToken(req, res) {
                     connect: {
                         email: email
                     }
-                },
-                acceptedTime: new Date()
+                }
             }
         });
         return response_204(res, 'Token rejected successfully');
     } catch (error) {
         return response_500(res, 'Error while rejecting token', error);
-    }
-}
-
-export async function getAllTokens(req, res) {
-    try {
-        const { organizationId } = req.user;
-        const tokens = await prisma.token.findMany({
-            where: {
-                organizationId: organizationId
-            },
-            select: {
-                token: true,
-                reason: true,
-                status: true,
-                issuedBy: {
-                    select: {
-                        user: {
-                            select: {
-                                name: true,
-                                email: true
-                            }
-                        }
-                    }
-                },
-                createdAt: true,
-                updatedAt: true,
-                startTime: true,
-                endTime: true
-            }
-        });
-        const formattedData = tokens.map((token) => ({
-            token: token.token,
-            reason: token.reason,
-            status: token.status,
-            createdAt: token.createdAt,
-            updatedAt: token.updatedAt,
-            startTime: token.startTime,
-            endTime: token.endTime,
-            name: token.issuedBy.user.name,
-            email: token.issuedBy.user.email
-        }));
-        return response_200(res, 'Tokens fetched successfully', formattedData);
-    } catch (error) {
-        return response_500(res, 'Error while fetching tokens', error);
     }
 }
 
@@ -170,6 +124,7 @@ export async function getPendingToken(req, res) {
         });
         const formattedData = tokens.map((token) => ({
             token: token.token,
+            heading: token.heading,
             reason: token.reason,
             status: token.status,
             startTime: token.startTime,
@@ -177,7 +132,7 @@ export async function getPendingToken(req, res) {
             name: token.issuedBy.user.name,
             email: token.issuedBy.user.email,
             phoneNumber: token.issuedBy.user.phoneNumber,
-            profileImg: token.issuedBy.user.profileImg,
+            profileImg: token.issuedBy.user.profileImg
         }));
         return response_200(res, 'Tokens fetched successfully', formattedData);
     } catch (error) {
@@ -193,25 +148,25 @@ export async function getAcceptedToken(req, res) {
                 organizationId: organizationId,
                 status: TokenStatus.ISSUED,
                 acceptedBy: {
-                    email:email
+                    email: email
                 }
             },
             select: {
                 token: true,
                 reason: true,
+                heading: true,
                 status: true,
                 issuedBy: {
                     select: {
                         user: {
                             select: {
                                 name: true,
-                                email: true
+                                email: true,
+                                phoneNumber: true
                             }
                         }
                     }
                 },
-                createdAt: true,
-                updatedAt: true,
                 startTime: true,
                 endTime: true
             }
@@ -219,13 +174,13 @@ export async function getAcceptedToken(req, res) {
         const formattedData = tokens.map((token) => ({
             token: token.token,
             reason: token.reason,
+            heading: token.heading,
             status: token.status,
-            createdAt: token.createdAt,
-            updatedAt: token.updatedAt,
             startTime: token.startTime,
             endTime: token.endTime,
             name: token.issuedBy.user.name,
-            email: token.issuedBy.user.email
+            email: token.issuedBy.user.email,
+            phoneNumber: token.issuedBy.user.phoneNumber
         }));
         return response_200(
             res,
@@ -239,7 +194,7 @@ export async function getAcceptedToken(req, res) {
 
 export async function getRejectedToken(req, res) {
     try {
-        const { organizationId } = req.user;
+        const { organizationId, email } = req.user;
         const tokens = await prisma.token.findMany({
             where: {
                 organizationId: organizationId,
@@ -251,25 +206,26 @@ export async function getRejectedToken(req, res) {
             select: {
                 token: true,
                 reason: true,
+                heading: true,
                 status: true,
                 issuedBy: {
                     select: {
                         user: {
                             select: {
                                 name: true,
-                                email: true
+                                email: true,
+                                phoneNumber: true
                             }
                         }
                     }
                 },
-                createdAt: true,
-                updatedAt: true,
                 startTime: true,
                 endTime: true
             }
         });
         const formattedData = tokens.map((token) => ({
             token: token.token,
+            heading: token.heading,
             reason: token.reason,
             status: token.status,
             createdAt: token.createdAt,
@@ -277,7 +233,8 @@ export async function getRejectedToken(req, res) {
             startTime: token.startTime,
             endTime: token.endTime,
             name: token.issuedBy.user.name,
-            email: token.issuedBy.user.email
+            email: token.issuedBy.user.email,
+            phoneNumber: token.issuedBy.user.phoneNumber
         }));
         return response_200(
             res,
@@ -322,8 +279,7 @@ export async function tokenStats(req, res) {
                     newForm.denied += curr._count.token;
                 } else if (curr.status === TokenStatus.REQUESTED) {
                     newForm.pending += curr._count.token;
-                }
-                else newForm.approved += curr._count.token
+                } else newForm.approved += curr._count.token;
                 return newForm;
             },
             { approved: 0, denied: 0, pending: 0 }
