@@ -138,18 +138,28 @@ export async function getCheckInOutpasses(req, res) {
                     select: {
                         token: {
                             where: {
-                                status: TokenStatus.IN_USE
+                                OR: [
+                                    {
+                                        status: TokenStatus.EXPIRED
+                                    },
+                                    {
+                                        status: TokenStatus.LATE
+                                    }
+                                ]
                             },
                             select: {
                                 heading: true,
                                 exitTime: true,
+                                returnedTime: true,
+                                status: true,
                                 issuedBy: {
                                     select: {
                                         email: true,
                                         user: {
                                             select: {
                                                 name: true,
-                                                phoneNumber: true
+                                                phoneNumber: true,
+                                                profileImg: true
                                             }
                                         }
                                     }
@@ -170,7 +180,9 @@ export async function getCheckInOutpasses(req, res) {
                 phoneNumber: token.issuedBy.user.phoneNumber,
                 heading: token.heading,
                 exitTime: token.exitTime,
-                
+                profileImg: token.issuedBy.user.profileImg,
+                returnedTime: token.returnedTime,
+                status: token.status
             }))
         );
 
@@ -199,27 +211,19 @@ export async function getCheckoutOutpass(req, res) {
                     select: {
                         token: {
                             where: {
-                                OR: [
-                                    {
-                                        status: TokenStatus.EXPIRED
-                                    },
-                                    {
-                                        status: TokenStatus.LATE
-                                    }
-                                ]
+                                status: TokenStatus.IN_USE
                             },
                             select: {
                                 heading: true,
                                 exitTime: true,
-                                returnedTime: true,
-                                status: true,
                                 issuedBy: {
                                     select: {
                                         email: true,
                                         user: {
                                             select: {
                                                 name: true,
-                                                phoneNumber: true
+                                                phoneNumber: true,
+                                                profileImg: true
                                             }
                                         }
                                     }
@@ -238,8 +242,7 @@ export async function getCheckoutOutpass(req, res) {
                 phoneNumber: token.issuedBy.user.phoneNumber,
                 heading: token.heading,
                 exitTime: token.exitTime,
-                returnedTime: token.returnedTime,
-                status: token.status
+                profileImg: token.issuedBy.user.profileImg,
             }))
         );
 
