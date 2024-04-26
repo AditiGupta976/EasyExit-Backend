@@ -13,6 +13,12 @@ export async function getProfile(req, res) {
         const profile = await prisma.user.findUnique({
             where: {
                 email: email,
+            },
+            select: {
+                email: true,
+                name: true,
+                phoneNumber: true,
+                profileImg: true,
                 [role]: {
                     organization: {
                         name: true,
@@ -20,12 +26,6 @@ export async function getProfile(req, res) {
                         unrestrictedEndTime: true
                     }
                 }
-            },
-            select: {
-                email: true,
-                name: true,
-                phoneNumber: true,
-                profileImg: true,
             }
         });
 
