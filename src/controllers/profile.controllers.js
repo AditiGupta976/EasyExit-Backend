@@ -12,7 +12,7 @@ export async function getProfile(req, res) {
         const { email, role } = req.user;
         const profile = await prisma.user.findUnique({
             where: {
-                email: email,
+                email: email
             },
             select: {
                 email: true,
@@ -20,10 +20,14 @@ export async function getProfile(req, res) {
                 phoneNumber: true,
                 profileImg: true,
                 [role]: {
-                    organization: {
-                        name: true,
-                        unrestrictedStartTime: true,
-                        unrestrictedEndTime: true
+                    select: {
+                        organization: {
+                            select: {
+                                name: true,
+                                unrestrictedStartTime: true,
+                                unrestrictedEndTime: true
+                            }
+                        }
                     }
                 }
             }
@@ -49,12 +53,8 @@ export async function getProfile(req, res) {
 
 export async function updateProfile(req, res) {
     try {
-        const { email, role } = req.user;
-        let {
-            name,
-            password,
-            phoneNumber
-        } = req.body;
+        const { email } = req.user;
+        let { name, password, phoneNumber } = req.body;
 
         if (profileImg) {
             const imageUpload = await cloudinary.v2.uploader.upload(
@@ -80,9 +80,9 @@ export async function updateProfile(req, res) {
             },
             data: {
                 ...(name && { name: name }),
-                ...(password && { password: password }),    
+                ...(password && { password: password }),
                 ...(phoneNumber && { phoneNumber: Number(phoneNumber) }),
-                ...(profileImg && { profileImg: profileImg }),
+                ...(profileImg && { profileImg: profileImg })
             }
         });
 

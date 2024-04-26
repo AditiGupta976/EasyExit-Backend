@@ -120,6 +120,9 @@ export async function getPendingToken(req, res) {
                 },
                 startTime: true,
                 endTime: true
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         });
         const formattedData = tokens.map((token) => ({
@@ -169,6 +172,9 @@ export async function getAcceptedToken(req, res) {
                 },
                 startTime: true,
                 endTime: true
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         });
         const formattedData = tokens.map((token) => ({
@@ -221,6 +227,9 @@ export async function getRejectedToken(req, res) {
                 },
                 startTime: true,
                 endTime: true
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         });
         const formattedData = tokens.map((token) => ({
