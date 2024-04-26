@@ -58,6 +58,12 @@ export async function getAcceptedOutpasses(req, res) {
                             },
                             {
                                 status: TokenStatus.EXPIRED
+                            },
+                            {
+                                status: TokenStatus.LATE
+                            },
+                            {
+                                status: TokenStatus.IN_USE
                             }
                         ]
                     },
@@ -77,9 +83,6 @@ export async function getAcceptedOutpasses(req, res) {
                                 }
                             }
                         }
-                    },
-                    orderBy: {
-                        createdAt: 'desc'
                     }
                 }
             }
@@ -189,9 +192,6 @@ export async function getRejectedOutpasses(req, res) {
                                 }
                             }
                         }
-                    },
-                    orderBy: {
-                        createdAt: 'desc'
                     }
                 }
             }
@@ -238,9 +238,6 @@ export async function getPendingOutpasses(req, res) {
                         startTime: true,
                         endTime: true,
                         status: true,
-                    },
-                    orderBy: {
-                        createdAt: 'desc'
                     }
                 }
             }
